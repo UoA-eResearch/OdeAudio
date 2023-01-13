@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp, ode
 
-from src.odes.equation import dy
+from ODEAudio.odes.equation import dy
 
 
 def gen_sequence():

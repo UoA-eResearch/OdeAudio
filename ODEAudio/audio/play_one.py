@@ -3,7 +3,7 @@ import sounddevice
 from scipy.fft import fft
 from scipy.interpolate import interp1d
 
-from src.odes.gen_sequence import gen_sequence
+from ODEAudio.odes.gen_sequence import gen_sequence
 
 
 def make_sound(T, Y):
