@@ -3,10 +3,12 @@ from threading import Thread, Semaphore
 
 import numpy as np
 from scipy.integrate import ode
+from sounddevice import sleep
 
 from ODEAudio.odes.equation import dy, extract
 
-import sounddevice as sd
+from audio.play_stream import thread_stream
+from utility.buffer import Buffer
 
 
 class Integrator:
@@ -25,8 +27,13 @@ class Integrator:
         self.start_index = 0
         self.buffer = 5000
 
-        self.T = [0]
-        self.Y = [y_init[1]]
+        t, y = self.extract(0, np.asarray(y_init).reshape(-1, 1))
+
+        self.T = Buffer(100000)
+        self.T.append(0)
+
+        self.Y = Buffer(100000)
+        self.Y.append(y[0])
 
         self.sample_freq = None
         self.dt = 0.25
@@ -58,15 +65,10 @@ class Integrator:
                     self.new_args = None
                     self.solver.set_f_params(*self.args)
 
-            if len(self.Y) - self.buffer < self.start_index:
+            if self.Y.last_index() - self.buffer < self.start_index:
                 self.T.append(self.solver.t + self.dt)
                 Y = self.solver.integrate(self.solver.t + self.dt)
                 self.Y.append(2 * np.exp(Y[1]) - 0.5)
-
-            # if len(self.Y) > 100000:
-            #     self.start_index -= len(self.Y) - 50000
-            #     self.T = self.T[-50000:]
-            #     self.Y = self.Y[-50000:]
 
     def start_thread(self):
         self.thread = Thread(target=self.thread_step)
@@ -76,11 +78,12 @@ class Integrator:
         if status:
             print(status, file=sys.stderr)
 
+        while self.Y.last_index() < self.start_index + frames:
+            sleep(10)
+
         outdata[:, 0] = np.asarray(self.Y[self.start_index:self.start_index + frames])
 
         self.start_index += frames
-
-        print(len(self.Y))
 
 
 if __name__ == '__main__':
@@ -88,7 +91,4 @@ if __name__ == '__main__':
     I.prime()
     I.start_thread()
 
-    samplerate = sd.query_devices(None, 'output')['default_samplerate']
-    with sd.OutputStream(device=None, channels=1, callback=I.callback, samplerate=samplerate/2,
-                         blocksize=2000, latency=.3):
-        input()
+    sound = thread_stream(I.callback)

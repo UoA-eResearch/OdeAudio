@@ -8,7 +8,7 @@ class Buffer:
         else:
             self.data = []
 
-        self.append_threshold = 1.125
+        self.append_threshold = 1.5
 
     def _resize(self, threshold=0.0):
         if len(self) > self.max_size * threshold:
@@ -26,9 +26,14 @@ class Buffer:
     def __len__(self):
         return len(self.data)
 
+    def last_index(self):
+        return -self.index_offset + len(self)
+
     def _adjust_index(self, index):
         if isinstance(index, slice):
-            return slice(self._adjust_index(index.start), self._adjust_index(index.stop))
+            start = self._adjust_index(index.start) if index.start else None
+            stop = self._adjust_index(index.stop) if index.stop else None
+            return slice(start, stop, index.step)
 
         if index >= 0:
             # Check index hasn't already been dropped
