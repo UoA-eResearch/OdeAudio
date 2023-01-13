@@ -1,0 +1,61 @@
+#:kivy 2.1.0
+
+<MathAudioApplet>:
+    canvas:
+        Color:
+            rgba: .4, .4, .4, .5
+        Line:
+            points: self.points
+            width: 1
+
+        Color:
+            rgba: 0, 1, 0, .6
+
+        Rectangle:
+            pos: 0, 0.5 * root.height - 1
+            size: root.width, 2
+
+        Rectangle:
+            pos: 0.5 * root.width - 1, 0
+            size: 2, root.height
+
+        Line:
+            points: ((0, 0), (root.width, root.height))
+            width: 1.414
+
+    cursor: mouse_cursor
+
+    Label:
+        font_size: 40
+        center_x: root.width * 3 / 4
+        top: root.top - 5
+        text: "e: " + str(root.str_e)
+
+    Label:
+        font_size: 40
+        center_x: root.width * 1 / 4
+        top: root.top - 5
+        text: "c: " + str(root.str_c)
+
+    Label:
+        font_size: 12
+        left_x: 1
+        top: root.top - 2
+        text: f'{root.y_max:.2f}'
+
+    Label:
+        font_size: 12
+        x: 2
+        bottom: 2
+        text: f'{root.y_min:.2f}'
+
+    Cursor:
+        id: mouse_cursor
+        center: self.parent.center
+
+<Cursor>:
+    size: 10, 10
+    canvas:
+        Ellipse:
+            pos: self.pos
+            size: self.size
