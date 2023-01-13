@@ -1,12 +1,11 @@
 from math import inf
-from threading import Thread
 
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ObjectProperty, StringProperty, ListProperty
 
-from ODEAudio.audio.play_stream import audio_stream, thread_stream
+from ODEAudio.audio.play_stream import thread_stream
 from ODEAudio.odes.equation import dy, extract
 from ODEAudio.integrator import Integrator
 
@@ -44,16 +43,16 @@ class MathAudioApplet(Widget):
         self.str_e = f'{self.lambda_e:.3f}'
         self.str_c = f'{self.lambda_c:.3f}'
 
-        i = self.I.start_index
-        x = np.asarray(self.I.T[-20000:])
-        if len(x):
-            xp = range_map(x.min(initial=inf), x.max(initial=0), 0, self.width, x)
-            y = np.asarray(self.I.Y[-20000:])
-            self.y_min = float(y.min(initial=self.y_min))
-            self.y_max = float(y.max(initial=self.y_max))
-            yp = range_map(self.y_min, self.y_max, self.height, 0, y)
-
-            self.points = zip(xp, yp)
+        # i = self.I.start_index
+        # x = np.asarray(self.I.T[-20000:])
+        # if len(x):
+        #     xp = range_map(x.min(initial=inf), x.max(initial=0), 0, self.width, x)
+        #     y = np.asarray(self.I.Y[-20000:])
+        #     self.y_min = float(y.min(initial=self.y_min))
+        #     self.y_max = float(y.max(initial=self.y_max))
+        #     yp = range_map(self.y_min, self.y_max, self.height, 0, y)
+        #
+        #     self.points = zip(xp, yp)
 
     def on_touch_up(self, touch):
         print(self.lambda_e, self.lambda_c)
