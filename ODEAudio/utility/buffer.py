@@ -23,6 +23,10 @@ class Buffer:
         self.data.extend(values)
         self._resize()
 
+    def truncate(self, index):
+        index = self._adjust_index(index)
+        self.data = self.data[:index]
+
     def __len__(self):
         return len(self.data)
 

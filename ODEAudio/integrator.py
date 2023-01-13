@@ -35,10 +35,13 @@ class Integrator:
         self.Y = Buffer(100000)
         self.Y.append(y[0])
 
+        self.YY = Buffer(100000)
+        self.YY.append(y_init)
+
         self.sample_freq = None
         self.dt = 0.25
 
-        self.solver = ode(self.dy).set_integrator('vode', method='bdf', order=15, atol=1e-8, rtol=1e-8).\
+        self.solver = ode(self.dy).set_integrator('vode', method='bdf', order=15, atol=1e-7, rtol=1e-7).\
             set_f_params(*self.args).set_initial_value(self.y_init)
 
     def prime(self):
@@ -49,6 +52,7 @@ class Integrator:
         while self.solver.t < t_final:
             self.T.append(self.solver.t + self.dt)
             Y = self.solver.integrate(self.solver.t + self.dt)
+            self.YY.append(Y)
             self.Y.append(2 * np.exp(Y[1]) - 0.5)
 
     change_args_sema = Semaphore()
@@ -64,10 +68,15 @@ class Integrator:
                     self.args = self.new_args
                     self.new_args = None
                     self.solver.set_f_params(*self.args)
+                    self.solver.set_initial_value(self.YY[self.start_index], self.T[self.start_index])
+                    self.T.truncate(self.start_index)
+                    self.Y.truncate(self.start_index)
+                    self.YY.truncate(self.start_index)
 
             if self.Y.last_index() - self.buffer < self.start_index:
                 self.T.append(self.solver.t + self.dt)
                 Y = self.solver.integrate(self.solver.t + self.dt)
+                self.YY.append(Y)
                 self.Y.append(2 * np.exp(Y[1]) - 0.5)
 
     def start_thread(self):
