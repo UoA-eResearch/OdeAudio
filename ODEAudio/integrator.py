@@ -1,5 +1,5 @@
 import sys
-from threading import Thread
+from threading import Thread, Semaphore
 
 import numpy as np
 from scipy.integrate import ode
@@ -44,15 +44,19 @@ class Integrator:
             Y = self.solver.integrate(self.solver.t + self.dt)
             self.Y.append(2 * np.exp(Y[1]) - 0.5)
 
+    change_args_sema = Semaphore()
+
     def change_args(self, *args):
-        self.new_args = args
+        with self.change_args_sema:
+            self.new_args = tuple(args)
 
     def thread_step(self):
         while True:
-            if self.new_args:
-                self.args = self.new_args
-                self.new_args = None
-                self.solver.set_f_params(*self.args)
+            with self.change_args_sema:
+                if self.new_args:
+                    self.args = self.new_args
+                    self.new_args = None
+                    self.solver.set_f_params(*self.args)
 
             if len(self.Y) - self.buffer < self.start_index:
                 self.T.append(self.solver.t + self.dt)
