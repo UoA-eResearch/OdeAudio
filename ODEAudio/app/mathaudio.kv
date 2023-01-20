@@ -38,6 +38,26 @@
         text: "c: " + str(root.str_c)
 
     Label:
+        font_size: 30
+        center_x: root.width * .5
+        top: root.top
+        text: "lambda_c"
+
+    Label:
+        font_size: 30
+        center_y: root.height * .5
+        left_x: 0
+        canvas.before:
+            PushMatrix
+            Rotate:
+                angle: 90
+                origin: self.center
+        canvas.after:
+            PopMatrix
+        rotate: 90
+        text: "lambda_e"
+
+    Label:
         font_size: 12
         left_x: 1
         top: root.top - 2
