@@ -5,13 +5,12 @@ from kivy.clock import Clock
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ObjectProperty, StringProperty, ListProperty
 
+import numpy as np
+
 from ODEAudio.audio.play_stream import AudioStream
 from ODEAudio.odes.equation import dy, extract
 from ODEAudio.integrator import Integrator
-
-import numpy as np
-
-from app.keyboard import MyKeyboardListener
+from ODEAudio.app.keyboard import MyKeyboardListener
 
 
 @np.vectorize
@@ -27,10 +26,10 @@ class MathAudioApplet(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.I = Integrator(dy, extract, [-.1, -.101, -.102], [1.001, 0.999])
-        self.I.prime()
-        self.I.start_thread()
-        self.sound = AudioStream(self.I.callback)
+        self.solver = Integrator(dy, extract, [-.1, -.101, -.102], [1.001, 0.999])
+        self.solver.prime()
+        self.solver.start_thread()
+        self.sound = AudioStream(self.solver.callback)
 
         self.keyboard = MyKeyboardListener()
         self.keyboard.register(self.pause, keycode=32)
@@ -57,11 +56,11 @@ class MathAudioApplet(Widget):
     def reset(self):
         self.sound.stream.stop()
         self.pause_text = "Paused"
-        self.I.reset([-.1, -.101, -.102], [self.lambda_c, self.lambda_e])
+        self.solver.reset([-.1, -.101, -.102], [self.lambda_c, self.lambda_e])
 
     def exit(self):
         self.sound.close()
-        self.I.close()
+        self.solver.close()
 
     def update(self, dt):
         self.lambda_c = float(range_map(0, self.width, 0.9, 1.1, self.cursor.center_x))
@@ -69,6 +68,7 @@ class MathAudioApplet(Widget):
         self.str_e = f'{self.lambda_e:.3f}'
         self.str_c = f'{self.lambda_c:.3f}'
 
+        # Plot ODE output in the background
         # i = self.I.start_index
         # x = np.asarray(self.I.T[-20000:])
         # if len(x):
@@ -81,7 +81,7 @@ class MathAudioApplet(Widget):
         #     self.points = zip(xp, yp)
 
     def on_touch_up(self, touch):
-        self.I.change_args(self.lambda_e, self.lambda_c)
+        self.solver.change_args(self.lambda_e, self.lambda_c)
 
 
 class Cursor(Widget):

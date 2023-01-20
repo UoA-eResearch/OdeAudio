@@ -7,8 +7,8 @@ from sounddevice import sleep
 
 from ODEAudio.odes.equation import dy, extract
 
-from audio.play_stream import AudioStream
-from utility.buffer import Buffer
+from ODEAudio.audio.play_stream import AudioStream
+from ODEAudio.utility.buffer import Buffer
 
 
 class Integrator:
