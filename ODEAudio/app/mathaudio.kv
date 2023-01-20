@@ -49,6 +49,12 @@
         bottom: 2
         text: f'{root.y_min:.2f}'
 
+    Label:
+        font_size: 40
+        center_x: root.width / 2
+        bottom: 5
+        text: root.pause_text
+
     Cursor:
         id: mouse_cursor
         center: self.parent.center

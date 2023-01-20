@@ -7,7 +7,7 @@ from sounddevice import sleep
 
 from ODEAudio.odes.equation import dy, extract
 
-from audio.play_stream import thread_stream
+from audio.play_stream import AudioStream
 from utility.buffer import Buffer
 
 
@@ -27,22 +27,17 @@ class Integrator:
         self.start_index = 0
         self.buffer = 5000
 
-        t, y = self.extract(0, np.asarray(y_init).reshape(-1, 1))
-
-        self.T = Buffer(100000)
-        self.T.append(0)
-
-        self.Y = Buffer(100000)
-        self.Y.append(y[0])
-
-        self.YY = Buffer(100000)
-        self.YY.append(y_init)
+        self.T = None
+        self.Y = None
+        self.YY = None
 
         self.sample_freq = None
         self.dt = 0.25
+        self.solver = None
 
-        self.solver = ode(self.dy).set_integrator('vode', method='bdf', order=15, atol=1e-7, rtol=1e-7).\
-            set_f_params(*self.args).set_initial_value(self.y_init)
+        self.kill_thread = False
+
+        self.reset(y_init, args)
 
     def prime(self):
         """Fill initial buffer and calculate constants"""
@@ -55,6 +50,23 @@ class Integrator:
             self.YY.append(Y)
             self.Y.append(2 * np.exp(Y[1]) - 0.5)
 
+    def reset(self, y_init, args):
+        t, y = self.extract(0, np.asarray(y_init).reshape(-1, 1))
+
+        self.T = Buffer(100000)
+        self.T.append(0)
+
+        self.Y = Buffer(100000)
+        self.Y.append(y[0])
+
+        self.YY = Buffer(100000)
+        self.YY.append(y_init)
+
+        self.solver = ode(self.dy).set_integrator('vode', method='bdf', order=15, atol=1e-7, rtol=1e-7).\
+            set_f_params(*args).set_initial_value(y_init)
+
+        self.start_index = 0
+
     change_args_sema = Semaphore()
 
     def change_args(self, *args):
@@ -62,7 +74,7 @@ class Integrator:
             self.new_args = tuple(args)
 
     def thread_step(self):
-        while True:
+        while not self.kill_thread:
             with self.change_args_sema:
                 if self.new_args:
                     self.args = self.new_args
@@ -83,6 +95,10 @@ class Integrator:
         self.thread = Thread(target=self.thread_step)
         self.thread.start()
 
+    def close(self):
+        self.kill_thread = True
+        self.thread.join()
+
     def callback(self, outdata, frames, time, status):
         if status:
             print(status, file=sys.stderr)
@@ -100,4 +116,5 @@ if __name__ == '__main__':
     I.prime()
     I.start_thread()
 
-    sound = thread_stream(I.callback)
+    sound = AudioStream(I.callback)
+    sound.start()

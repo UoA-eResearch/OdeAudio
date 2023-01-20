@@ -5,11 +5,13 @@ from kivy.clock import Clock
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ObjectProperty, StringProperty, ListProperty
 
-from ODEAudio.audio.play_stream import thread_stream
+from ODEAudio.audio.play_stream import AudioStream
 from ODEAudio.odes.equation import dy, extract
 from ODEAudio.integrator import Integrator
 
 import numpy as np
+
+from app.keyboard import MyKeyboardListener
 
 
 @np.vectorize
@@ -23,12 +25,18 @@ class MathAudioApplet(Widget):
     y_max = NumericProperty(-inf)
     points = ListProperty([])
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.I = Integrator(dy, extract, [-.1, -.101, -.102], [1.001, 0.999])
         self.I.prime()
         self.I.start_thread()
-        self.sound = thread_stream(self.I.callback)
+        self.sound = AudioStream(self.I.callback)
+
+        self.keyboard = MyKeyboardListener()
+        self.keyboard.register(self.pause, keycode=32)
+        self.keyboard.register(self.reset, text='r')
+        self.keyboard.register(self.exit, keycode=27)
+        self.add_widget(self.keyboard)
 
     cursor = ObjectProperty(None)
     lambda_e = NumericProperty(0)
@@ -36,6 +44,24 @@ class MathAudioApplet(Widget):
 
     str_e = StringProperty("")
     str_c = StringProperty("")
+
+    pause_text = StringProperty("Paused")
+
+    def pause(self):
+        self.sound.pause()
+        if self.sound.stream.stopped:
+            self.pause_text = "Paused"
+        else:
+            self.pause_text = ""
+
+    def reset(self):
+        self.sound.stream.stop()
+        self.pause_text = "Paused"
+        self.I.reset([-.1, -.101, -.102], [self.lambda_c, self.lambda_e])
+
+    def exit(self):
+        self.sound.close()
+        self.I.close()
 
     def update(self, dt):
         self.lambda_c = float(range_map(0, self.width, 0.9, 1.1, self.cursor.center_x))
@@ -55,7 +81,6 @@ class MathAudioApplet(Widget):
         #     self.points = zip(xp, yp)
 
     def on_touch_up(self, touch):
-        print(self.lambda_e, self.lambda_c)
         self.I.change_args(self.lambda_e, self.lambda_c)
 
 
