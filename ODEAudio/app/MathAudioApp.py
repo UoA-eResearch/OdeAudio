@@ -3,7 +3,7 @@ from math import inf
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty, ObjectProperty, StringProperty, ListProperty
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty, ListProperty, BooleanProperty
 
 import numpy as np
 
@@ -35,6 +35,7 @@ class MathAudioApplet(Widget):
         self.keyboard.register(self.pause, keycode=32)
         self.keyboard.register(self.reset, text='r')
         self.keyboard.register(self.exit, keycode=27)
+        self.keyboard.register(self.toggle_plot, text='p')
         self.add_widget(self.keyboard)
 
     cursor = ObjectProperty(None)
@@ -58,6 +59,11 @@ class MathAudioApplet(Widget):
         self.pause_text = "Paused"
         self.solver.reset([-.1, -.101, -.102], [self.lambda_c, self.lambda_e])
 
+    show_plot = BooleanProperty(False)
+
+    def toggle_plot(self):
+        self.show_plot = not self.show_plot
+
     def exit(self):
         self.sound.close()
         self.solver.close()
@@ -69,16 +75,17 @@ class MathAudioApplet(Widget):
         self.str_c = f'{self.lambda_c:.3f}'
 
         # Plot ODE output in the background
-        # i = self.I.start_index
-        # x = np.asarray(self.I.T[-20000:])
-        # if len(x):
-        #     xp = range_map(x.min(initial=inf), x.max(initial=0), 0, self.width, x)
-        #     y = np.asarray(self.I.Y[-20000:])
-        #     self.y_min = float(y.min(initial=self.y_min))
-        #     self.y_max = float(y.max(initial=self.y_max))
-        #     yp = range_map(self.y_min, self.y_max, self.height, 0, y)
-        #
-        #     self.points = zip(xp, yp)
+        if self.show_plot:
+            i = self.solver.start_index
+            x = np.asarray(self.solver.T[-20000:])
+            if len(x):
+                xp = range_map(x.min(initial=inf), x.max(initial=0), 0, self.width, x)
+                y = np.asarray(self.solver.Y[-20000:])
+                self.y_min = float(y.min(initial=self.y_min))
+                self.y_max = float(y.max(initial=self.y_max))
+                yp = range_map(self.y_min, self.y_max, self.height, 0, y)
+
+                self.points = zip(xp, yp)
 
     def on_touch_up(self, touch):
         self.solver.change_args(self.lambda_e, self.lambda_c)
