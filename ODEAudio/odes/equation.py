@@ -36,3 +36,19 @@ def dy5(_, y, cA, eA, cB, eB):
     ])
 
     return dy
+
+
+def dy5_vec(_, y, cA, eA, cB, eB):
+
+    y2exp = np.exp(2 * y)
+
+    ytot = y2exp.sum(axis=0)
+
+    vec_evals = np.asarray([-cA, eB, -cB, eA, 0])
+
+    dy = np.asarray([
+        1 - ytot + np.dot(vec_evals, np.roll(y2exp, -(i + 1), axis=0))
+        for i in range(len(y))
+    ])
+
+    return dy
