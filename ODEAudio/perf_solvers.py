@@ -2,7 +2,8 @@ import numpy as np
 from scipy.integrate import ode, solve_ivp, BDF
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
-from ODEAudio.odes.equation import dy5_vec as dy
+from ODEAudio.odes.equation import dy as dy_3
+from ODEAudio.odes.equation import dy5 as dy_5
 from time import perf_counter
 from tqdm import tqdm
 import julia
@@ -126,10 +127,29 @@ def gen_sol(method, dy, y_init, args, t_steps, atol, rtol, step_size=1.0):
     return t_out, y_out, times
 
 
-jul_f = julia.Main.eval("""
+jul_f3 = julia.Main.eval("""
 using LinearAlgebra
 
-function du(u, p, t)
+function du3(u, p, t)
+    u2exp = exp.(2*u)
+    utot = sum(u2exp)
+    
+    lC, lE = p
+    
+    vecs = [-lC, lE, 0.0]
+    
+    return [
+        1 - utot + dot(circshift(u2exp, -i), vecs)
+        for i in 1:3
+            ]
+end
+""")
+
+
+jul_f5 = julia.Main.eval("""
+using LinearAlgebra
+
+function du5(u, p, t)
     u2exp = exp.(2*u)
     utot = sum(u2exp)
 
@@ -147,12 +167,12 @@ end
 
 def gen_julia(method, dy, y_init, args, t_steps, atol, rtol, step_size=1.0):
     t_out = np.asarray([0])
-    y_out = np.asarray([y_init]).T
+    y_out = np.asarray([y_init[0]]).T
     times = []
 
     yy = np.asarray(y_init)
 
-    prob = de.ODEProblem(jul_f, yy, np.asarray(t_steps[0]), np.asarray(args),
+    prob = de.ODEProblem(dy, yy, np.asarray(t_steps[0]), np.asarray(args),
                          abstol=atol, reltol=rtol)
 
     for tt in t_steps:
@@ -163,9 +183,9 @@ def gen_julia(method, dy, y_init, args, t_steps, atol, rtol, step_size=1.0):
 
         t_new = np.arange(tt[0], tt[-1], step_size)
         y_new = np.asarray(sol(t_new))
-        # print(np.asarray(y_new).shape)
+
         t_out = np.hstack((t_out, t_new))
-        y_out = np.hstack((y_out, y_new))
+        y_out = np.hstack((y_out, np.asarray(y_new)[0]))
 
         yy = np.asarray(sol.u[-1])
 
@@ -175,11 +195,11 @@ def gen_julia(method, dy, y_init, args, t_steps, atol, rtol, step_size=1.0):
     return t_out, y_out, times
 
 
-# y_init = [-.1, -.101, -.102]
-y_init = [-.1, -.101, -.102, -.103, -.104]
-# lambdas = [1.001, 0.999]
-lambdas = [1.001, 0.999, 1.002, 0.998]
-vectorized = True
+y_init_3 = [-.1, -.101, -.102]
+y_init_5 = [-.1, -.101, -.102, -.103, -.104]
+lambdas_3 = [1.001, 0.999]
+lambdas_5 = [1.001, 0.999, 1.002, 0.998]
+vectorized = False
 
 
 def plot_method_speeds():
@@ -188,33 +208,31 @@ def plot_method_speeds():
     err_tol = 1e-6
 
     interp_results = {
-        meth: gen_ivp_interp(meth, dy, y_init, lambdas, t_steps, err_tol, err_tol, step_size=.25)
+        meth: gen_ivp_interp(meth, dy_5, y_init_5, lambdas_5, t_steps, err_tol, err_tol, step_size=.25)
         for meth in tqdm(solve_ivp_methods, desc='IVP with interpolation')
     }
 
     plots(interp_results, 'IVP interpolation', t_starts)
 
     fixed_results = {
-        meth: gen_ivp_fixed(meth, dy, y_init, lambdas, t_steps, err_tol, err_tol, step_size=.25)
+        meth: gen_ivp_fixed(meth, dy_5, y_init_5, lambdas_5, t_steps, err_tol, err_tol, step_size=.25)
         for meth in tqdm(solve_ivp_methods, desc='IVP with fixed step')
     }
 
     plots(fixed_results, 'IVP fixed step', t_starts)
 
     solver_results = {
-        meth: gen_sol(meth, dy, y_init, lambdas, t_steps, err_tol, err_tol, step_size=.25)
+        meth: gen_sol(meth, dy_5, y_init_5, lambdas_5, t_steps, err_tol, err_tol, step_size=.25)
         for meth in tqdm(ode_methods, desc='Solver')
     }
 
     plots(solver_results, 'solver', t_starts)
 
     julia_results = {
-        'julia': gen_julia(None, None, y_init, lambdas, t_steps, err_tol, err_tol, step_size=0.25)
+        'julia': gen_julia(None, jul_f5, y_init_5, lambdas_5, t_steps, err_tol, err_tol, step_size=0.25)
     }
 
-    sns.lineplot(data=julia_results['julia'][1].T)
-
-    # plots(julia_results, 'Julia', t_starts)
+    plots(julia_results, 'Julia', t_starts)
 
     plt.show()
 
@@ -228,10 +246,10 @@ def plot_accuracy_speeds(method, sol_methods):
     step_sizes = [0.25, 0.5, 0.75, 1]
     step_size = 0.25
 
-    control = gen_ivp_fixed('RK45', dy, y_init, lambdas, t_steps, 1e-8, 1e-8, .25)
+    control = gen_ivp_fixed('RK45', dy_5, y_init_5, lambdas_5, t_steps, 1e-8, 1e-8, .25)
 
     interp_results = {
-        step_size: gen_ivp_interp(method, dy, y_init, lambdas, t_steps, err_tol, err_tol, step_size=step_size)
+        step_size: gen_ivp_interp(method, dy_5, y_init_5, lambdas_5, t_steps, err_tol, err_tol, step_size=step_size)
         for step_size in tqdm(step_sizes, desc='IVP with interpolation')
     }
 
@@ -240,14 +258,14 @@ def plot_accuracy_speeds(method, sol_methods):
     # plt.show()
 
     fixed_results = {
-        step_size: gen_ivp_fixed(method, dy, y_init, lambdas, t_steps, err_tol, err_tol, step_size=step_size)
+        step_size: gen_ivp_fixed(method, dy_5, y_init_5, lambdas_5, t_steps, err_tol, err_tol, step_size=step_size)
         for step_size in tqdm(step_sizes, desc='IVP with fixed step')
     }
 
     plots(fixed_results, 'IVP fixed step', t_starts)
 
     solver_results = {
-        step_size: gen_sol(method, dy, y_init, lambdas, t_steps, err_tol, err_tol, step_size=step_size)
+        step_size: gen_sol(method, dy_5, y_init_5, lambdas_5, t_steps, err_tol, err_tol, step_size=step_size)
         for step_size in tqdm(step_sizes, desc='Solver')
     }
 
