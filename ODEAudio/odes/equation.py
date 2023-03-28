@@ -1,4 +1,7 @@
+import julia
 import numpy as np
+
+julia.Julia()
 
 
 def dy(_, y, lambda_c, lambda_e):
@@ -52,3 +55,23 @@ def dy5_vec(_, y, cA, eA, cB, eB):
     ])
 
     return dy
+
+
+def build_julia_dy():
+    return julia.Main.eval("""
+        using LinearAlgebra
+        
+        function du(u, p, t)
+            u2exp = exp.(2*u)
+            utot = sum(u2exp)
+        
+            cA, eA, cB, eB = p
+        
+            vecs = [-cA, eB, -cB, eA, 0]
+        
+            return [
+                1 - utot + dot(circshift(u2exp, -i), vecs)
+                for i in 1:5
+                    ]
+        end
+        """)
