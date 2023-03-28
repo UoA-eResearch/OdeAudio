@@ -11,18 +11,31 @@ Setup a virtual environment
 Activate that virtual environment - run one of the scripts in `.venv/Scripts`, depending on your OS, 
 e.g.: `.\.venv\Scripts\Activate.ps1` on Windows Powershell
 
-If using python 3.11, install Kivy development branch
-
-```
-python -m pip install kivy --pre --no-deps --index-url  https://kivy.org/downloads/simple/
-python -m pip install "kivy[base]" --pre --extra-index-url https://kivy.org/downloads/simple/
-```
-
 Install requirements
 
-`pip install -r requirements.txt`
+```
+pip install kivy[full] --pre --extra-index-url https://kivy.org/downloads/simple/
+pip install -r requirements.txt
+```
 
-Run the app
+#### Julia setup
+We use Julia for integration, first install it from the website
+
+https://julialang.org/downloads/
+
+Make sure the check 'add Julia to PATH' during installation, and restart your machine.
+
+Launch Julia and install a few modules we need - these would be installed automatically later, but the app will appear to hang for several minutes.
+
+```julia
+using Pkg
+Pkg.add("DifferentialEquations")
+Pkg.add("LinearAlgebra")
+```
+
+If you get any errors about Julia not being found - double check that it's on your path, and restart your machine.
+
+#### Run the app
 
 `python -m ODEAAudio.main`
 

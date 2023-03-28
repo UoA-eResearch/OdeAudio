@@ -1,4 +1,7 @@
-Kivy
+# pip install kivy[full] --pre --extra-index-url https://kivy.org/downloads/simple/
 numpy
 scipy
 sounddevice
+diffeqpy
+tqdm
+seaborn
