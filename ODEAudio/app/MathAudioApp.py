@@ -36,6 +36,9 @@ class MathAudioApplet(Widget):
     y_max = NumericProperty(-inf)
     points = ListProperty([])
 
+    cCursor = ListProperty([0, 0])
+    eCursor = ListProperty([0, 0])
+
     cPoints1 = ListProperty([])
     cPoints2 = ListProperty([])
     cPoints3 = ListProperty([])
@@ -121,6 +124,11 @@ class MathAudioApplet(Widget):
         # Guides for cA/cB
         screen_transform = (self.cLim, (0, self.width/2), self.cLim, (0, self.height))
 
+        self.cCursor = [
+            range_map(*self.cLim, 0, self.width/2, self.cB),
+            range_map(*self.cLim, 0, self.height, self.cA)
+        ]
+
         x_vals = np.linspace(*self.cLim)
         self.cPoints1 = map_zip(x_vals, (self.eA + self.eB) - x_vals, *screen_transform)
         self.cPoints2 = map_zip(x_vals, np.sqrt(x_vals * self.eA * self.eA * self.eB), *screen_transform)
@@ -128,6 +136,11 @@ class MathAudioApplet(Widget):
 
         # Guides for eA/eB
         screen_transform = (self.eLim, (self.width / 2, self.width), self.eLim, (0, self.height))
+
+        self.eCursor = [
+            range_map(*self.eLim, self.width/2, self.width, self.eB),
+            range_map(*self.eLim, 0, self.height, self.eA)
+        ]
 
         x_vals = np.linspace(*self.eLim)
         self.ePoints1 = map_zip(x_vals, (self.cA + self.cB) - x_vals, *screen_transform)
