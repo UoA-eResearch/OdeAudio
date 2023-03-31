@@ -118,20 +118,36 @@ class MathAudioApplet(Widget):
         #         self.points = zip(xp, yp)
 
     def update_guides(self):
-        cB = np.linspace(0, 2)
-        eA = 1.0
-        eB = 0.8
-        screen_transform = (self.cLim, (0, self.width), self.cLim, (0, self.height))
-        self.cPoints1 = map_zip(cB, (eA + eB) - cB, *screen_transform)
-        self.cPoints2 = map_zip(cB, np.sqrt(cB * eA * eA * eB), *screen_transform)
-        self.cPoints3 = map_zip(cB, (cB * eB) / eA, *screen_transform)
+        # Guides for cA/cB
+        screen_transform = (self.cLim, (0, self.width/2), self.cLim, (0, self.height))
+
+        x_vals = np.linspace(*self.cLim)
+        self.cPoints1 = map_zip(x_vals, (self.eA + self.eB) - x_vals, *screen_transform)
+        self.cPoints2 = map_zip(x_vals, np.sqrt(x_vals * self.eA * self.eA * self.eB), *screen_transform)
+        self.cPoints3 = map_zip(x_vals, (x_vals * self.eB) / self.eA, *screen_transform)
+
+        # Guides for eA/eB
+        screen_transform = (self.eLim, (self.width / 2, self.width), self.eLim, (0, self.height))
+
+        x_vals = np.linspace(*self.eLim)
+        self.ePoints1 = map_zip(x_vals, (self.cA + self.cB) - x_vals, *screen_transform)
+        self.ePoints2 = map_zip(x_vals, np.sqrt(x_vals * self.cA * self.cA * self.cB), *screen_transform)
+        self.ePoints3 = map_zip(x_vals, (x_vals * self.cB) / self.cA, *screen_transform)
 
     def on_touch_up(self, touch):
         # cA eA cB eB
-        self.cB = float(range_map(0, self.width, *self.cLim, self.cursor.center_x))
-        self.cA = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
+        if self.cursor.center_x < self.width * 0.5:
+            self.cB = float(range_map(0, self.width * .5, *self.cLim, self.cursor.center_x))
+            self.cA = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
+        else:
+            self.eB = float(range_map(self.width * .5, self.width, *self.cLim, self.cursor.center_x))
+            self.eA = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
+
         self.str_cA = f'{self.cA:.3f}'
         self.str_cB = f'{self.cB:.3f}'
+
+        self.str_eA = f'{self.eA:.3f}'
+        self.str_eB = f'{self.eB:.3f}'
 
         self.update_guides()
 
