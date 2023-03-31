@@ -129,10 +129,10 @@ class MathAudioApplet(Widget):
             range_map(*self.cLim, 0, self.height, self.cA)
         ]
 
-        x_vals = np.linspace(*self.cLim)
-        self.cPoints1 = map_zip(x_vals, (self.eA + self.eB) - x_vals, *screen_transform)
-        self.cPoints2 = map_zip(x_vals, np.sqrt(x_vals * self.eA * self.eA * self.eB), *screen_transform)
-        self.cPoints3 = map_zip(x_vals, (x_vals * self.eB) / self.eA, *screen_transform)
+        x_cA = np.linspace(*self.cLim)
+        self.cPoints1 = map_zip(x_cA, (self.eA + self.eB) - x_cA, *screen_transform)
+        self.cPoints2 = map_zip(x_cA, (self.eA ** 2 * self.eB) / (x_cA ** 2), *screen_transform)
+        self.cPoints3 = map_zip(x_cA, (x_cA * self.eA) / self.eB, *screen_transform)
 
         # Guides for eA/eB
         screen_transform = (self.eLim, (self.width / 2, self.width), self.eLim, (0, self.height))
@@ -142,10 +142,10 @@ class MathAudioApplet(Widget):
             range_map(*self.eLim, 0, self.height, self.eA)
         ]
 
-        x_vals = np.linspace(*self.eLim)
-        self.ePoints1 = map_zip(x_vals, (self.cA + self.cB) - x_vals, *screen_transform)
-        self.ePoints2 = map_zip(x_vals, np.sqrt(x_vals * self.cA * self.cA * self.cB), *screen_transform)
-        self.ePoints3 = map_zip(x_vals, (x_vals * self.cB) / self.cA, *screen_transform)
+        x_eA = np.linspace(*self.eLim)
+        self.ePoints1 = map_zip(x_eA, (self.cA + self.cB) - x_eA, *screen_transform)
+        self.ePoints2 = map_zip(x_eA, (self.cA ** 2 * self.cB) / (x_eA ** 2), *screen_transform)
+        self.ePoints3 = map_zip(x_eA, (x_eA * self.cA) / self.cB, *screen_transform)
 
     def on_touch_up(self, touch):
         # cA eA cB eB
