@@ -1,5 +1,6 @@
 from math import inf
 
+from kivy import Config
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.widget import Widget
@@ -11,6 +12,7 @@ from ODEAudio.audio.play_stream import AudioStream
 from ODEAudio.odes.equation import dy, extract
 from ODEAudio.integrator import Integrator
 from ODEAudio.app.keyboard import MyKeyboardListener
+from odes.julia_solver import JSolver
 
 
 @np.vectorize
@@ -26,9 +28,11 @@ class MathAudioApplet(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.solver = Integrator(dy, extract, [-.1, -.101, -.102], [1.001, 0.999])
-        self.solver.prime()
-        self.solver.start_thread()
+        # self.solver = Integrator(dy, extract, [-.1, -.101, -.102], [1.001, 0.999])
+        # self.solver.prime()
+        # self.solver.start_thread()
+        self.solver = JSolver(np.asarray([-.1, -.101, -.102, -.103, -.104]), np.asarray([1.001, 0.999, 1.002, 0.998]))
+        # self.solver.start_thread()
         self.sound = AudioStream(self.solver.callback)
 
         self.keyboard = MyKeyboardListener()
@@ -57,7 +61,8 @@ class MathAudioApplet(Widget):
     def reset(self):
         self.sound.stream.stop()
         self.pause_text = "Paused"
-        self.solver.reset([-.1, -.101, -.102], [self.lambda_c, self.lambda_e])
+        # TODO
+        # self.solver.reset([-.1, -.101, -.102], [self.lambda_c, self.lambda_e])
 
     show_plot = BooleanProperty(False)
 
@@ -74,21 +79,23 @@ class MathAudioApplet(Widget):
         self.str_e = f'{self.lambda_e:.3f}'
         self.str_c = f'{self.lambda_c:.3f}'
 
-        # Plot ODE output in the background
-        if self.show_plot:
-            i = self.solver.start_index
-            x = np.asarray(self.solver.T[-20000:])
-            if len(x):
-                xp = range_map(x.min(initial=inf), x.max(initial=0), 0, self.width, x)
-                y = np.asarray(self.solver.Y[-20000:])
-                self.y_min = float(y.min(initial=self.y_min))
-                self.y_max = float(y.max(initial=self.y_max))
-                yp = range_map(self.y_min, self.y_max, self.height, 0, y)
+        self.solver.thread_step()
 
-                self.points = zip(xp, yp)
+        # Plot ODE output in the background
+        # if self.show_plot:
+        #     i = self.solver.start_index
+        #     x = np.asarray(self.solver.T[-20000:])
+        #     if len(x):
+        #         xp = range_map(x.min(initial=inf), x.max(initial=0), 0, self.width, x)
+        #         y = np.asarray(self.solver.Y[-20000:])
+        #         self.y_min = float(y.min(initial=self.y_min))
+        #         self.y_max = float(y.max(initial=self.y_max))
+        #         yp = range_map(self.y_min, self.y_max, self.height, 0, y)
+        #
+        #         self.points = zip(xp, yp)
 
     def on_touch_up(self, touch):
-        self.solver.change_args(self.lambda_e, self.lambda_c)
+        self.solver.change_args(0.999, 1.001, self.lambda_e, self.lambda_c)
 
 
 class Cursor(Widget):
@@ -107,4 +114,6 @@ class MathAudioApp(App):
 
 
 if __name__ == '__main__':
+    Config.set('kivy', 'log_level', 'info')
+    Config.write()
     MathAudioApp().run()

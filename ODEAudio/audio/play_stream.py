@@ -8,9 +8,9 @@ class AudioStream:
         self.callback = callback
         self.running = False
         self.samplerate = sd.query_devices(None, 'output')['default_samplerate']
-        self.stream = sd.OutputStream(device=None, channels=1,
-                                      callback=callback, samplerate=self.samplerate/2,
-                                      blocksize=2000, latency=.1)
+        self.stream = sd.OutputStream(device=None, channels=2,
+                                      callback=callback, samplerate=self.samplerate/6,
+                                      blocksize=4000, latency=.2)
 
     def start(self):
         self.stream.start()
