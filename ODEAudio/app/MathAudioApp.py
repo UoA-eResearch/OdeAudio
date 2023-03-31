@@ -9,8 +9,6 @@ from kivy.properties import NumericProperty, ObjectProperty, StringProperty, Lis
 import numpy as np
 
 from ODEAudio.audio.play_stream import AudioStream
-from ODEAudio.odes.equation import dy, extract
-from ODEAudio.integrator import Integrator
 from ODEAudio.app.keyboard import MyKeyboardListener
 from odes.julia_solver import JSolver
 
@@ -21,10 +19,21 @@ def range_map(x0, x1, y0, y1, v):
     return y0 + (y1 - y0) * (v - x0) / (x1 - x0)
 
 
+def map_zip(x, y, x_from, x_to, y_from, y_to):
+    return zip(
+        range_map(*x_from, *x_to, x),
+        range_map(*y_from, *y_to, y)
+    )
+
+
 class MathAudioApplet(Widget):
     y_min = NumericProperty(inf)
     y_max = NumericProperty(-inf)
     points = ListProperty([])
+
+    cPoints1 = ListProperty([])
+    cPoints2 = ListProperty([])
+    cPoints3 = ListProperty([])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -42,12 +51,16 @@ class MathAudioApplet(Widget):
         self.keyboard.register(self.toggle_plot, text='p')
         self.add_widget(self.keyboard)
 
-    cursor = ObjectProperty(None)
-    lambda_e = NumericProperty(0)
-    lambda_c = NumericProperty(0)
+        self.cLim = (0.6, 1.4)
 
-    str_e = StringProperty("")
-    str_c = StringProperty("")
+        self.update_guides()
+
+    cursor = ObjectProperty(None)
+    cA = NumericProperty(0)
+    cB = NumericProperty(0)
+
+    str_cA = StringProperty("")
+    str_cB = StringProperty("")
 
     pause_text = StringProperty("Paused")
 
@@ -62,7 +75,7 @@ class MathAudioApplet(Widget):
         self.sound.stream.stop()
         self.pause_text = "Paused"
         # TODO
-        # self.solver.reset([-.1, -.101, -.102], [self.lambda_c, self.lambda_e])
+        # self.solver.reset([-.1, -.101, -.102], [self.cB, self.cA])
 
     show_plot = BooleanProperty(False)
 
@@ -74,10 +87,6 @@ class MathAudioApplet(Widget):
         self.solver.close()
 
     def update(self, dt):
-        self.lambda_c = float(range_map(0, self.width, 0.9, 1.1, self.cursor.center_x))
-        self.lambda_e = float(range_map(0, self.height, 0.9, 1.1, self.cursor.center_y))
-        self.str_e = f'{self.lambda_e:.3f}'
-        self.str_c = f'{self.lambda_c:.3f}'
 
         self.solver.thread_step()
 
@@ -94,8 +103,25 @@ class MathAudioApplet(Widget):
         #
         #         self.points = zip(xp, yp)
 
+    def update_guides(self):
+        cB = np.linspace(0, 2)
+        eA = 1.0
+        eB = 0.8
+        screen_transform = (self.cLim, (0, self.width), self.cLim, (0, self.height))
+        self.cPoints1 = map_zip(cB, (eA + eB) - cB, *screen_transform)
+        self.cPoints2 = map_zip(cB, np.sqrt(cB * eA * eA * eB), *screen_transform)
+        self.cPoints3 = map_zip(cB, (cB * eB) / eA, *screen_transform)
+
     def on_touch_up(self, touch):
-        self.solver.change_args(0.999, 1.001, self.lambda_e, self.lambda_c)
+        # cA eA cB eB
+        self.cB = float(range_map(0, self.width, *self.cLim, self.cursor.center_x))
+        self.cA = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
+        self.str_cA = f'{self.cA:.3f}'
+        self.str_cB = f'{self.cB:.3f}'
+
+        self.update_guides()
+
+        self.solver.change_args(self.cA, 1, self.cB, 0.8)
 
 
 class Cursor(Widget):

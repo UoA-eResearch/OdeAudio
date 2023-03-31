@@ -9,18 +9,30 @@
             width: 1
 
         Color:
-            rgba: 0, 1, 0, .6
-
-        Rectangle:
-            pos: 0, 0.5 * root.height - 1
-            size: root.width, 2
-
-        Rectangle:
-            pos: 0.5 * root.width - 1, 0
-            size: 2, root.height
+            rgba: .6, .6, .6, .8
 
         Line:
-            points: ((0, 0), (root.width, root.height))
+            points: ((0, root.height/2), (root.width, root.height/2))
+            width: 1
+
+        Line:
+            points: ((root.width/2, 0), (root.width/2, root.height))
+            width: 1
+
+        Color:
+            rgba: 0, 1, 0, .6
+
+
+        Line:
+            points: self.cPoints1
+            width: 1.414
+
+        Line:
+            points: self.cPoints2
+            width: 1.414
+
+        Line:
+            points: self.cPoints3
             width: 1.414
 
     cursor: mouse_cursor
@@ -29,19 +41,19 @@
         font_size: 40
         center_x: root.width * 3 / 4
         top: root.top - 5
-        text: "e: " + str(root.str_e)
+        text: "cA: " + str(root.str_cA)
 
     Label:
         font_size: 40
         center_x: root.width * 1 / 4
         top: root.top - 5
-        text: "c: " + str(root.str_c)
+        text: "cB: " + str(root.str_cB)
 
     Label:
         font_size: 30
         center_x: root.width * .5
         top: root.top
-        text: "lambda_c"
+        text: "cB"
 
     Label:
         font_size: 30
@@ -55,7 +67,7 @@
         canvas.after:
             PopMatrix
         rotate: 90
-        text: "lambda_e"
+        text: "cA"
 
     Label:
         font_size: 12
