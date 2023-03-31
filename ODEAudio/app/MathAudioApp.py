@@ -1,6 +1,11 @@
 from math import inf
 
 from kivy import Config
+
+Config.set('graphics', 'width', 1200)
+Config.set('graphics', 'height', 600)
+
+from kivy.core.window import Window
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.widget import Widget
@@ -123,6 +128,9 @@ class MathAudioApplet(Widget):
 
         self.solver.change_args(self.cA, 1, self.cB, 0.8)
 
+    def on_resize(self, *args):
+        self.update_guides()
+
 
 class Cursor(Widget):
     def on_touch_move(self, touch):
@@ -135,11 +143,10 @@ class Cursor(Widget):
 class MathAudioApp(App):
     def build(self):
         app = MathAudioApplet()
+        Window.bind(size=app.on_resize)
         Clock.schedule_interval(app.update, 1/30)
         return app
 
 
 if __name__ == '__main__':
-    Config.set('kivy', 'log_level', 'info')
-    Config.write()
     MathAudioApp().run()
