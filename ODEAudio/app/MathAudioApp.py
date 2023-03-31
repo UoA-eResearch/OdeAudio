@@ -40,6 +40,10 @@ class MathAudioApplet(Widget):
     cPoints2 = ListProperty([])
     cPoints3 = ListProperty([])
 
+    ePoints1 = ListProperty([])
+    ePoints2 = ListProperty([])
+    ePoints3 = ListProperty([])
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # self.solver = Integrator(dy, extract, [-.1, -.101, -.102], [1.001, 0.999])
@@ -57,15 +61,20 @@ class MathAudioApplet(Widget):
         self.add_widget(self.keyboard)
 
         self.cLim = (0.6, 1.4)
+        self.eLim = (0.6, 1.4)
 
         self.update_guides()
 
     cursor = ObjectProperty(None)
     cA = NumericProperty(0)
     cB = NumericProperty(0)
+    eA = NumericProperty(0)
+    eB = NumericProperty(0)
 
     str_cA = StringProperty("")
     str_cB = StringProperty("")
+    str_eA = StringProperty("")
+    str_eB = StringProperty("")
 
     pause_text = StringProperty("Paused")
 
