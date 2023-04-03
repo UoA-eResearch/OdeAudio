@@ -95,7 +95,8 @@ class MathAudioApplet(Widget):
         self.sound.stream.stop()
         self.pause_text = "Paused"
 
-        textInput = TextInput(text=', '.join([str(v) for v in self.solver.y_init]), multiline=False)
+        textInput = TextInput(text=', '.join([str(v) for v in self.solver.y_init]),
+                              multiline=False)
         textInput.bind(on_text_validate=self.reset_solver)
         self.popup = Popup(title='Set y init', content=textInput, auto_dismiss=False)
         self.popup.open()
@@ -106,6 +107,7 @@ class MathAudioApplet(Widget):
 
         self.popup.dismiss()
         self.popup = None
+        self.keyboard.focus()
 
         self.solver.reset(y_init)
 

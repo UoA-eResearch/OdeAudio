@@ -6,11 +6,16 @@ class MyKeyboardListener(Widget):
 
     def __init__(self, **kwargs):
         super(MyKeyboardListener, self).__init__(**kwargs)
+        self._keyboard = None
+        self.text_actions = {}
+        self.code_actions = {}
+
+        self.focus()
+
+    def focus(self):
         self._keyboard = Window.request_keyboard(
             self._keyboard_closed, self, 'text')
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
-        self.text_actions = {}
-        self.code_actions = {}
 
     def _keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
