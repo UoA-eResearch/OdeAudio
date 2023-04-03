@@ -12,6 +12,7 @@ class JSolver:
         self.dy = build_julia_dy()
         self.y_init = y_init
         self.yy = y_init
+        self.new_init = None
 
         self.args = args
         self.new_args = None
@@ -32,11 +33,29 @@ class JSolver:
     def close(self):
         pass
 
+    def reset(self, y_init):
+        self.new_init = y_init
+
     def change_args(self, *args):
-        self.args = np.asarray(args)
+        self.new_args = np.asarray(args)
 
     def thread_step(self):
         buf = self.buffer
+
+        if self.new_args is not None:
+            self.args = self.new_args
+            self.new_args = None
+
+            self.Y = self.yy[:2]
+            self.start_index = 0
+
+        if self.new_init is not None:
+            self.y_init = self.new_init
+            self.yy = self.new_init
+            self.new_init = None
+
+            self.Y = self.yy[:2]
+            self.start_index = 0
 
         if len(self.Y) - buf < self.start_index:
             prob = de.remake(self.solver,

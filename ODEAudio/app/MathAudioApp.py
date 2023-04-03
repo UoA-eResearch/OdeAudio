@@ -1,6 +1,8 @@
 from math import inf
 
 from kivy import Config
+from kivy.uix.popup import Popup
+from kivy.uix.textinput import TextInput
 
 Config.set('graphics', 'width', 1200)
 Config.set('graphics', 'height', 600)
@@ -62,6 +64,7 @@ class MathAudioApplet(Widget):
         self.keyboard.register(self.exit, keycode=27)
         self.keyboard.register(self.toggle_plot, text='p')
         self.add_widget(self.keyboard)
+        self.popup = None
 
         self.cLim = (0.6, 1.4)
         self.eLim = (0.6, 1.4)
@@ -91,8 +94,21 @@ class MathAudioApplet(Widget):
     def reset(self):
         self.sound.stream.stop()
         self.pause_text = "Paused"
-        # TODO
-        # self.solver.reset([-.1, -.101, -.102], [self.cB, self.cA])
+
+        textInput = TextInput(text=', '.join([str(v) for v in self.solver.y_init]), multiline=False)
+        textInput.bind(on_text_validate=self.reset_solver)
+        self.popup = Popup(title='Set y init', content=textInput, auto_dismiss=False)
+        self.popup.open()
+
+    def reset_solver(self, value):
+        values = value.text.split(',')
+        y_init = np.asarray([float(v) for v in values])
+
+        self.popup.dismiss()
+        self.popup = None
+
+        self.solver.reset(y_init)
+
 
     show_plot = BooleanProperty(False)
 
