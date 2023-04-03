@@ -59,28 +59,17 @@
 
     cursor: mouse_cursor
 
+    # cA/B Labels
     Label:
         font_size: 40
-        center_x: root.width * 3 / 4
+        center_x: root.width * 1 / 4
         top: root.top - 5
         text: "cA: " + str(root.str_cA)
 
     Label:
         font_size: 40
-        center_x: root.width * 1 / 4
-        top: root.top - 5
-        text: "cB: " + str(root.str_cB)
-
-    Label:
-        font_size: 30
-        center_x: root.width * .5
-        top: root.top
-        text: "cB"
-
-    Label:
-        font_size: 30
         center_y: root.height * .5
-        left_x: 0
+        x: 5
         canvas.before:
             PushMatrix
             Rotate:
@@ -88,20 +77,27 @@
                 origin: self.center
         canvas.after:
             PopMatrix
-        rotate: 90
-        text: "cA"
+        text: "cB: " + str(root.str_cB)
+
+    # eA/B labels:
+    Label:
+        font_size: 40
+        center_x: root.width * 3 / 4
+        top: root.top - 5
+        text: "eA: " + str(root.str_eA)
 
     Label:
-        font_size: 12
-        left_x: 1
-        top: root.top - 2
-        text: f'{root.y_max:.2f}'
-
-    Label:
-        font_size: 12
-        x: 2
-        bottom: 2
-        text: f'{root.y_min:.2f}'
+        font_size: 40
+        center_y: root.height * .5
+        x: 5 + root.width * .5
+        canvas.before:
+            PushMatrix
+            Rotate:
+                angle: 90
+                origin: self.center
+        canvas.after:
+            PopMatrix
+        text: "eB: " + str(root.str_eB)
 
     Label:
         font_size: 40

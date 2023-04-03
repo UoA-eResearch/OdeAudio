@@ -51,11 +51,8 @@ class MathAudioApplet(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # self.solver = Integrator(dy, extract, [-.1, -.101, -.102], [1.001, 0.999])
-        # self.solver.prime()
-        # self.solver.start_thread()
-        self.solver = JSolver(np.asarray([-.1, -.101, -.102, -.103, -.104]), np.asarray([1.001, 0.999, 1.002, 0.998]))
-        # self.solver.start_thread()
+        self.solver = JSolver(np.asarray([-5.01, -5, -5, -5, -5]),
+                              np.asarray([self.cA, self.eA, self.cB, self.eB]))
         self.sound = AudioStream(self.solver.callback)
 
         self.keyboard = MyKeyboardListener()
@@ -72,10 +69,10 @@ class MathAudioApplet(Widget):
         self.update_guides()
 
     cursor = ObjectProperty(None)
-    cA = NumericProperty(0)
-    cB = NumericProperty(0)
-    eA = NumericProperty(0)
-    eB = NumericProperty(0)
+    cA = NumericProperty(1.0)
+    cB = NumericProperty(1.0)
+    eA = NumericProperty(1.0)
+    eB = NumericProperty(0.8)
 
     str_cA = StringProperty("")
     str_cB = StringProperty("")
