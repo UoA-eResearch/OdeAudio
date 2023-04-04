@@ -36,7 +36,12 @@ def map_zip(x, y, x_from, x_to, y_from, y_to):
 class MathAudioApplet(Widget):
     y_min = NumericProperty(inf)
     y_max = NumericProperty(-inf)
-    points = ListProperty([])
+
+    points0 = ListProperty([])
+    points1 = ListProperty([])
+    points2 = ListProperty([])
+    points3 = ListProperty([])
+    points4 = ListProperty([])
 
     cCursor = ListProperty([0, 0])
     eCursor = ListProperty([0, 0])
@@ -135,22 +140,36 @@ class MathAudioApplet(Widget):
         self.sound.close()
         self.solver.close()
 
-    def update(self, dt):
+    def set_points(self, i, val):
+        if i == 0:
+            self.points0 = val
+        elif i == 1:
+            self.points1 = val
+        elif i == 2:
+            self.points2 = val
+        elif i == 3:
+            self.points3 = val
+        elif i == 4:
+            self.points4 = val
 
+    def update(self, dt):
         self.solver.thread_step()
 
-        # Plot ODE output in the background
-        # if self.show_plot:
-        #     i = self.solver.start_index
-        #     x = np.asarray(self.solver.T[-20000:])
-        #     if len(x):
-        #         xp = range_map(x.min(initial=inf), x.max(initial=0), 0, self.width, x)
-        #         y = np.asarray(self.solver.Y[-20000:])
-        #         self.y_min = float(y.min(initial=self.y_min))
-        #         self.y_max = float(y.max(initial=self.y_max))
-        #         yp = range_map(self.y_min, self.y_max, self.height, 0, y)
-        #
-        #         self.points = zip(xp, yp)
+        if self.solver.update_freq:
+            new_points = self.solver.get_trace()
+            if new_points is not None:
+                x, y = new_points
+
+                for i, x0, x1 in zip(
+                    range(5),
+                    np.arange(0, 1.0, .2) * self.width,
+                    np.arange(.2, 1.2, .2) * self.width
+                ):
+                    self.set_points(i, zip(
+                        range_map(0, 1, x0, x1, x),
+                        range_map(0, 1, 0, self.height * .2, y[:, i])
+                    ))
+
 
     def update_guides(self):
         # Guides for cA/cB

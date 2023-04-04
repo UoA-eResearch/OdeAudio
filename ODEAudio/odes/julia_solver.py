@@ -19,6 +19,8 @@ class JSolver:
         self.args = args
         self.new_args = None
 
+        self.update_freq = False
+
         self.step_size = 0.25
 
         self.solver = de.ODEProblem(self.dy, self.y_init, (0, 250), self.args,
@@ -72,6 +74,62 @@ class JSolver:
             y = np.asarray(sol(t_out))
             self.Y = np.vstack((self.Y, y.T))
 
+    def get_trace(self):
+        pts = 2000
+        if self.Y.shape[0] < pts \
+                or self.Y.shape[0] < self.start_index \
+                or self.new_args is not None \
+                or self.new_init is not None:
+            self.update_freq = False
+            return None
+
+        self.update_freq = False
+
+        data = self.Y[self.start_index - pts:self.start_index]
+
+        if data.shape[0] < pts:
+            return None
+
+        return np.linspace(0, 1, data.shape[0]), np.exp(data)
+
+    def get_frequency(self):
+        pts = 2000
+        if self.Y.shape[0] < pts\
+                or self.Y.shape[0] < self.start_index\
+                or self.new_args is not None\
+                or self.new_init is not None:
+            self.update_freq = False
+            return None
+
+        self.update_freq = False
+
+        # Offset mean
+        data = self.Y[self.start_index-pts:self.start_index]
+        data = data - np.mean(data, axis=0)
+
+        if data.shape[0] < pts:
+            return None
+
+        # Calc frequencies
+        spectrum = abs(np.fft.fftshift(
+            np.fft.fft(data, axis=0)
+        ))
+
+        freq = np.fft.fftshift(
+            np.fft.fftfreq(pts)
+        )
+
+        # Take only the positive half
+        x = freq[pts//2:100 + pts//2]
+        y = spectrum[pts//2:100 + pts//2]
+
+        # Scale to 0-1
+        x /= np.amax(x, axis=0)
+        y /= np.amax(y, axis=0)
+
+        # Create points list
+        return x, y
+
     def set_channel(self, input, output):
         self.channels[output] = input
 
@@ -86,4 +144,5 @@ class JSolver:
         outdata[:, :] = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
 
         self.start_index += frames
+        self.update_freq = True
 
