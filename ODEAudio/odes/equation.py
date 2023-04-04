@@ -57,6 +57,9 @@ def dy5_vec(_, y, cA, eA, cB, eB):
     return dy
 
 
+# Possible modification to julia code to clamp invalid inputs
+# u[u. > 1]. = 1
+
 def build_julia_dy():
     return julia.Main.eval("""
         using LinearAlgebra

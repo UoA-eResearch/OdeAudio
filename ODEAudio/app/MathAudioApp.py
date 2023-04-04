@@ -57,7 +57,7 @@ class MathAudioApplet(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.solver = JSolver(np.asarray([-4, -5, -5, -5, -5]),
-                              np.asarray([self.cA, self.eB, self.cB, self.eA]))
+                              np.asarray([self.cA, self.eA, self.cB, self.eB]))
         self.sound = AudioStream(self.solver.callback)
 
         self.keyboard = MyKeyboardListener()
@@ -176,8 +176,8 @@ class MathAudioApplet(Widget):
         screen_transform = (self.cLim, (0, self.width/2), self.cLim, (0, self.height))
 
         self.cCursor = [
-            range_map(*self.cLim, 0, self.width/2, self.cB),
-            range_map(*self.cLim, 0, self.height, self.cA)
+            range_map(*self.cLim, 0, self.width/2, self.cA),
+            range_map(*self.cLim, 0, self.height, self.cB)
         ]
 
         x_cA = np.linspace(*self.cLim)
@@ -189,8 +189,8 @@ class MathAudioApplet(Widget):
         screen_transform = (self.eLim, (self.width / 2, self.width), self.eLim, (0, self.height))
 
         self.eCursor = [
-            range_map(*self.eLim, self.width/2, self.width, self.eB),
-            range_map(*self.eLim, 0, self.height, self.eA)
+            range_map(*self.eLim, self.width/2, self.width, self.eA),
+            range_map(*self.eLim, 0, self.height, self.eB)
         ]
 
         x_eA = np.linspace(*self.eLim)
@@ -201,11 +201,11 @@ class MathAudioApplet(Widget):
     def on_touch_up(self, touch):
         # cA eA cB eB
         if self.cursor.center_x < self.width * 0.5:
-            self.cB = float(range_map(0, self.width * .5, *self.cLim, self.cursor.center_x))
-            self.cA = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
+            self.cA = float(range_map(0, self.width * .5, *self.cLim, self.cursor.center_x))
+            self.cB = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
         else:
-            self.eB = float(range_map(self.width * .5, self.width, *self.cLim, self.cursor.center_x))
-            self.eA = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
+            self.eA = float(range_map(self.width * .5, self.width, *self.eLim, self.cursor.center_x))
+            self.eB = float(range_map(0, self.height, *self.eLim, self.cursor.center_y))
 
         self.str_cA = f'{self.cA:.3f}'
         self.str_cB = f'{self.cB:.3f}'
@@ -215,7 +215,7 @@ class MathAudioApplet(Widget):
 
         self.update_guides()
 
-        self.solver.change_args(self.cA, self.eB, self.cB, self.eA)
+        self.solver.change_args(self.cA, self.eA, self.cB, self.eB)
 
     def on_resize(self, *args):
         self.update_guides()
