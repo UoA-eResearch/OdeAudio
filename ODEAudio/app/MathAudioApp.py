@@ -60,6 +60,8 @@ class MathAudioApplet(Widget):
         self.keyboard.register(self.reset, text='r')
         self.keyboard.register(self.exit, keycode=27)
         self.keyboard.register(self.toggle_plot, text='p')
+        for i in range(10):
+            self.keyboard.register(self.set_channel, text=str(i))
         self.add_widget(self.keyboard)
         self.popup = None
 
@@ -79,16 +81,19 @@ class MathAudioApplet(Widget):
     str_eA = StringProperty("")
     str_eB = StringProperty("")
 
+    str_ch1 = StringProperty("0")
+    str_ch2 = StringProperty("1")
+
     pause_text = StringProperty("Paused")
 
-    def pause(self):
+    def pause(self, *args):
         self.sound.pause()
         if self.sound.stream.stopped:
             self.pause_text = "Paused"
         else:
             self.pause_text = ""
 
-    def reset(self):
+    def reset(self, *args):
         self.sound.stream.stop()
         self.pause_text = "Paused"
 
@@ -113,6 +118,18 @@ class MathAudioApplet(Widget):
 
     def toggle_plot(self):
         self.show_plot = not self.show_plot
+
+    def set_channel(self, str_channel):
+        channel = int(str_channel)
+        if channel == 0:
+            self.str_ch2 = "4"
+            self.solver.set_channel(4, 1)
+        elif channel < 6:
+            self.str_ch1 = str(channel - 1)
+            self.solver.set_channel(channel-1, 0)
+        else:
+            self.str_ch2 = str(channel - 6)
+            self.solver.set_channel(channel - 6, 1)
 
     def exit(self):
         self.sound.close()

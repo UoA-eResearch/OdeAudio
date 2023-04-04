@@ -34,7 +34,7 @@ class MyKeyboardListener(Widget):
         exiting = keycode[1] == 'escape'
 
         if text in self.text_actions:
-            self.text_actions[text]()
+            self.text_actions[text](text)
             if not exiting:
                 return True
 

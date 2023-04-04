@@ -14,6 +14,8 @@ class JSolver:
         self.yy = y_init
         self.new_init = None
 
+        self.channels = [0, 1]
+
         self.args = args
         self.new_args = None
 
@@ -25,7 +27,7 @@ class JSolver:
         self.buffer = 10000
 
         self.start_index = 0
-        self.Y = np.asarray([[0, 0]])
+        self.Y = self.y_init
 
     def start_thread(self):
         pass
@@ -46,7 +48,7 @@ class JSolver:
             self.args = self.new_args
             self.new_args = None
 
-            self.Y = self.yy[:2]
+            self.Y = self.yy
             self.start_index = 0
 
         if self.new_init is not None:
@@ -54,7 +56,7 @@ class JSolver:
             self.yy = self.new_init
             self.new_init = None
 
-            self.Y = self.yy[:2]
+            self.Y = self.yy
             self.start_index = 0
 
         if len(self.Y) - buf < self.start_index:
@@ -68,7 +70,10 @@ class JSolver:
 
             self.yy = sol.u[-1]
             y = np.asarray(sol(t_out))
-            self.Y = np.vstack((self.Y, y[:2, :].T))
+            self.Y = np.vstack((self.Y, y.T))
+
+    def set_channel(self, input, output):
+        self.channels[output] = input
 
     def callback(self, outdata, frames, time, status):
         if status:
@@ -78,7 +83,7 @@ class JSolver:
             self.buffer = 10 * frames
             sleep(10)
 
-        outdata[:, :] = np.asarray(self.Y[self.start_index:self.start_index + frames, :2])
+        outdata[:, :] = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
 
         self.start_index += frames
 
