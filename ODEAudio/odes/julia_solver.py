@@ -141,7 +141,9 @@ class JSolver:
             self.buffer = 10 * frames
             sleep(10)
 
-        outdata[:, :] = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
+        d = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
+
+        outdata[:, :] = 2 * (np.exp(d) - 0.5)
 
         self.start_index += frames
         self.update_freq = True
