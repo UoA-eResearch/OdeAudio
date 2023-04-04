@@ -51,8 +51,8 @@ class MathAudioApplet(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.solver = JSolver(np.asarray([-5.01, -5, -5, -5, -5]),
-                              np.asarray([self.cA, self.eA, self.cB, self.eB]))
+        self.solver = JSolver(np.asarray([-4, -5, -5, -5, -5]),
+                              np.asarray([self.cA, self.eB, self.cB, self.eA]))
         self.sound = AudioStream(self.solver.callback)
 
         self.keyboard = MyKeyboardListener()
@@ -179,7 +179,7 @@ class MathAudioApplet(Widget):
 
         self.update_guides()
 
-        self.solver.change_args(self.cA, 1, self.cB, 0.8)
+        self.solver.change_args(self.cA, self.eB, self.cB, self.eA)
 
     def on_resize(self, *args):
         self.update_guides()
