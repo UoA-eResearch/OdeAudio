@@ -70,8 +70,8 @@ class MathAudioApplet(Widget):
         self.add_widget(self.keyboard)
         self.popup = None
 
-        self.cLim = (0.6, 1.4)
-        self.eLim = (0.6, 1.4)
+        self.aLim = (.4, 1.6)
+        self.bLim = (0.5, 2)
 
         self.update_guides()
 
@@ -173,27 +173,27 @@ class MathAudioApplet(Widget):
 
     def update_guides(self):
         # Guides for cA/cB
-        screen_transform = (self.cLim, (0, self.width/2), self.cLim, (0, self.height))
+        screen_transform = (self.aLim, (0, self.width/2), self.bLim, (0, self.height))
 
         self.cCursor = [
-            range_map(*self.cLim, 0, self.width/2, self.cA),
-            range_map(*self.cLim, 0, self.height, self.cB)
+            range_map(*self.aLim, 0, self.width/2, self.cA),
+            range_map(*self.bLim, 0, self.height, self.cB)
         ]
 
-        x_cA = np.linspace(*self.cLim)
+        x_cA = np.linspace(*self.aLim)
         self.cPoints1 = map_zip(x_cA, (self.eA + self.eB) - x_cA, *screen_transform)
         self.cPoints2 = map_zip(x_cA, (self.eA ** 2 * self.eB) / (x_cA ** 2), *screen_transform)
         self.cPoints3 = map_zip(x_cA, (x_cA * self.eA) / self.eB, *screen_transform)
 
         # Guides for eA/eB
-        screen_transform = (self.eLim, (self.width / 2, self.width), self.eLim, (0, self.height))
+        screen_transform = (self.aLim, (self.width / 2, self.width), self.bLim, (0, self.height))
 
         self.eCursor = [
-            range_map(*self.eLim, self.width/2, self.width, self.eA),
-            range_map(*self.eLim, 0, self.height, self.eB)
+            range_map(*self.aLim, self.width/2, self.width, self.eA),
+            range_map(*self.bLim, 0, self.height, self.eB)
         ]
 
-        x_eA = np.linspace(*self.eLim)
+        x_eA = np.linspace(*self.aLim)
         self.ePoints1 = map_zip(x_eA, (self.cA + self.cB) - x_eA, *screen_transform)
         self.ePoints2 = map_zip(x_eA, (self.cA ** 2 * self.cB) / (x_eA ** 2), *screen_transform)
         self.ePoints3 = map_zip(x_eA, (x_eA * self.cA) / self.cB, *screen_transform)
@@ -201,11 +201,11 @@ class MathAudioApplet(Widget):
     def on_touch_up(self, touch):
         # cA eA cB eB
         if self.cursor.center_x < self.width * 0.5:
-            self.cA = float(range_map(0, self.width * .5, *self.cLim, self.cursor.center_x))
-            self.cB = float(range_map(0, self.height, *self.cLim, self.cursor.center_y))
+            self.cA = float(range_map(0, self.width * .5, *self.aLim, self.cursor.center_x))
+            self.cB = float(range_map(0, self.height, *self.bLim, self.cursor.center_y))
         else:
-            self.eA = float(range_map(self.width * .5, self.width, *self.eLim, self.cursor.center_x))
-            self.eB = float(range_map(0, self.height, *self.eLim, self.cursor.center_y))
+            self.eA = float(range_map(self.width * .5, self.width, *self.aLim, self.cursor.center_x))
+            self.eB = float(range_map(0, self.height, *self.bLim, self.cursor.center_y))
 
         self.str_cA = f'{self.cA:.3f}'
         self.str_cB = f'{self.cB:.3f}'
