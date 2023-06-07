@@ -4,6 +4,9 @@ from kivy import Config
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 
+from image.background import get_image
+from utility.lerps import range_map, map_zip
+
 Config.set('graphics', 'width', 1200)
 Config.set('graphics', 'height', 600)
 
@@ -18,19 +21,6 @@ import numpy as np
 from ODEAudio.audio.play_stream import AudioStream
 from ODEAudio.app.keyboard import MyKeyboardListener
 from odes.julia_solver import JSolver
-
-
-@np.vectorize
-def range_map(x0, x1, y0, y1, v):
-    """Map a value v from one range [x0, x1] to another [y0, y1]"""
-    return y0 + (y1 - y0) * (v - x0) / (x1 - x0)
-
-
-def map_zip(x, y, x_from, x_to, y_from, y_to):
-    return zip(
-        range_map(*x_from, *x_to, x),
-        range_map(*y_from, *y_to, y)
-    )
 
 
 class MathAudioApplet(Widget):
@@ -72,6 +62,9 @@ class MathAudioApplet(Widget):
 
         self.aLim = (.4, 1.6)
         self.bLim = (0.5, 2)
+
+        bg_image = get_image(self.aLim, self.bLim)
+        bg_image.save('bg_temp.png')
 
         self.update_guides()
 
@@ -176,7 +169,7 @@ class MathAudioApplet(Widget):
         screen_transform = (self.aLim, (0, self.width/2), self.bLim, (0, self.height))
 
         self.cCursor = [
-            range_map(*self.aLim, 0, self.width/2, self.cA),
+            range_map(*self.aLim, 0, self.width / 2, self.cA),
             range_map(*self.bLim, 0, self.height, self.cB)
         ]
 
@@ -189,7 +182,7 @@ class MathAudioApplet(Widget):
         screen_transform = (self.aLim, (self.width / 2, self.width), self.bLim, (0, self.height))
 
         self.eCursor = [
-            range_map(*self.aLim, self.width/2, self.width, self.eA),
+            range_map(*self.aLim, self.width / 2, self.width, self.eA),
             range_map(*self.bLim, 0, self.height, self.eB)
         ]
 

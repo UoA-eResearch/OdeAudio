@@ -1,6 +1,16 @@
 #:kivy 2.1.0
 
 <MathAudioApplet>:
+    # img: img
+
+    # BG image
+    # Image:
+    #     id: img
+    #     pos: 0, 0
+    #     width: root.width/2
+    #     height: root.height
+    #     allow_stretch: True
+
     canvas:
         Color:
             rgba: .4, .4, .4, .5
@@ -8,19 +18,19 @@
         # Channel frequencies
         Line:
             points: self.points0
-            width: 1
+            width: 2
         Line:
             points: self.points1
-            width: 1
+            width: 2
         Line:
             points: self.points2
-            width: 1
+            width: 2
         Line:
             points: self.points3
-            width: 1
+            width: 2
         Line:
             points: self.points4
-            width: 1
+            width: 2
 
         Color:
             rgba: .6, .6, .6, .8
@@ -34,8 +44,15 @@
             width: 1
 
         Color:
-            rgba: 0, 1, 0, .6
+            rgba: 1,1,1,.6
 
+        Rectangle:
+            source: 'bg_temp.png'
+            pos: 0, 0
+            size: root.width/2, root.height
+
+        Color:
+            rgba: 0, 1, 0, .6
 
         # Guides for cA/cB
         Ellipse:
