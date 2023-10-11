@@ -5,6 +5,7 @@ from diffeqpy import de
 from sounddevice import sleep
 
 from odes.equation import build_julia_dy
+from utility.trace import Trace
 
 
 class JSolver:
@@ -26,6 +27,9 @@ class JSolver:
         self.solver = de.ODEProblem(self.dy, self.y_init, (0, 250), self.args,
                                     abstol=1e-7, reltol=1e-7)
 
+        self.trace_file = Trace()
+        self.trace_file.update_pars(*self.args)
+
         self.buffer = 10000
 
         self.start_index = 0
@@ -35,10 +39,12 @@ class JSolver:
         pass
 
     def close(self):
-        pass
+        self.trace_file.close()
 
     def reset(self, y_init):
         self.new_init = y_init
+        self.trace_file.close()
+        self.trace_file = Trace()
 
     def change_args(self, *args):
         self.new_args = np.asarray(args)
@@ -52,6 +58,8 @@ class JSolver:
 
             self.Y = self.yy
             self.start_index = 0
+
+            self.trace_file.update_pars(*self.args)
 
         if self.new_init is not None:
             self.y_init = self.new_init
@@ -73,6 +81,8 @@ class JSolver:
             self.yy = sol.u[-1]
             y = np.asarray(sol(t_out))
             self.Y = np.vstack((self.Y, y.T))
+
+            self.trace_file.write(t_out, y.T)
 
     def get_trace(self):
         pts = 2000

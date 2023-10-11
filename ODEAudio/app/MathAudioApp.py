@@ -69,8 +69,8 @@ class MathAudioApplet(Widget):
         self.update_guides()
 
     cursor = ObjectProperty(None)
-    cA = NumericProperty(1.0)
-    cB = NumericProperty(1.0)
+    cA = NumericProperty(0.8)
+    cB = NumericProperty(1.255)
     eA = NumericProperty(1.0)
     eB = NumericProperty(0.8)
 
