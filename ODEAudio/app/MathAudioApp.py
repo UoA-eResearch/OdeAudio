@@ -54,7 +54,6 @@ class MathAudioApplet(Widget):
         self.keyboard.register(self.pause, keycode=32)
         self.keyboard.register(self.reset, text='r')
         self.keyboard.register(self.exit, keycode=27)
-        self.keyboard.register(self.toggle_plot, text='p')
         for i in range(10):
             self.keyboard.register(self.set_channel, text=str(i))
         self.add_widget(self.keyboard)
@@ -64,7 +63,7 @@ class MathAudioApplet(Widget):
         self.bLim = (0.5, 2)
 
         bg_image = get_image(self.aLim, self.bLim)
-        bg_image.save('bg_temp.png')
+        bg_image.save('bg_left.png')
 
         self.update_guides()
 
@@ -74,13 +73,13 @@ class MathAudioApplet(Widget):
     eA = NumericProperty(1.0)
     eB = NumericProperty(0.8)
 
+    lChan = NumericProperty(0)
+    rChan = NumericProperty(1)
+
     str_cA = StringProperty("")
     str_cB = StringProperty("")
     str_eA = StringProperty("")
     str_eB = StringProperty("")
-
-    str_ch1 = StringProperty("0")
-    str_ch2 = StringProperty("1")
 
     pause_text = StringProperty("Paused")
 
@@ -111,23 +110,17 @@ class MathAudioApplet(Widget):
 
         self.solver.reset(y_init)
 
-
-    show_plot = BooleanProperty(False)
-
-    def toggle_plot(self):
-        self.show_plot = not self.show_plot
-
     def set_channel(self, str_channel):
         channel = int(str_channel)
         if channel == 0:
-            self.str_ch2 = "4"
             self.solver.set_channel(4, 1)
+            self.rChan = 4
         elif channel < 6:
-            self.str_ch1 = str(channel - 1)
             self.solver.set_channel(channel-1, 0)
+            self.lChan = channel - 1
         else:
-            self.str_ch2 = str(channel - 6)
             self.solver.set_channel(channel - 6, 1)
+            self.rChan = channel - 6
 
     def exit(self):
         self.sound.close()

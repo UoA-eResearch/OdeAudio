@@ -28,7 +28,8 @@
             rgba: 1,1,1,.6
 
         Rectangle:
-            source: 'bg_temp.png'
+            # This source file is created at init time
+            source: 'bg_left.png'
             pos: 0, root.height * 0.2
             size: root.width/2, root.height * 0.8
 
@@ -69,7 +70,8 @@
             points: self.ePoints3
             width: 1.414
 
-        # Channel frequencies
+        ## Channel frequencies
+        # Clear area
         Color:
             rgba: 0, 0, 0, 1
 
@@ -77,6 +79,22 @@
             pos: 0, 0
             size: root.width, root.height * 0.2
 
+        # Highlight L/R channel
+        Color:
+            rgba: 0.5, 0, 0, 0.5
+
+        Rectangle:
+            pos: self.lChan * root.width * 0.2, 0
+            size: root.width * 0.2, root.height * 0.2
+
+        Color:
+            rgba: 0, 0.5, 0, 0.5
+
+        Rectangle:
+            pos: self.rChan * root.width * 0.2, 0
+            size: root.width * 0.2, root.height * 0.2
+
+        # Draw traces
         Color:
             rgba: .4, .4, .4, .5
 
@@ -117,19 +135,6 @@
 
 
     cursor: mouse_cursor
-
-    # Channel selection
-    Label:
-        font_size: 40
-        center_y: 0.2 * root.height
-        x: 50
-        text: "Left: " + root.str_ch1
-
-    Label:
-        font_size: 40
-        center_y: 0.2 * root.height
-        right: root.width - 50
-        text: "Right: " + root.str_ch2
 
     # cA/B Labels
     Label:
