@@ -163,14 +163,13 @@ class MathAudioApplet(Widget):
                         range_map(0, 1, 0, self.height * .2, y[:, i])
                     ))
 
-
     def update_guides(self):
         # Guides for cA/cB
-        screen_transform = (self.aLim, (0, self.width/2), self.bLim, (0, self.height))
+        screen_transform = (self.aLim, (0, self.width/2), self.bLim, (0.2 * self.height, self.height))
 
         self.cCursor = [
             range_map(*self.aLim, 0, self.width / 2, self.cA),
-            range_map(*self.bLim, 0, self.height, self.cB)
+            range_map(*self.bLim, 0.2 * self.height, self.height, self.cB)
         ]
 
         x_cA = np.linspace(*self.aLim)
@@ -179,11 +178,11 @@ class MathAudioApplet(Widget):
         self.cPoints3 = map_zip(x_cA, (x_cA * self.eA) / self.eB, *screen_transform)
 
         # Guides for eA/eB
-        screen_transform = (self.aLim, (self.width / 2, self.width), self.bLim, (0, self.height))
+        screen_transform = (self.aLim, (self.width / 2, self.width), self.bLim, (0.2 * self.height, self.height))
 
         self.eCursor = [
             range_map(*self.aLim, self.width / 2, self.width, self.eA),
-            range_map(*self.bLim, 0, self.height, self.eB)
+            range_map(*self.bLim, 0.2 * self.height, self.height, self.eB)
         ]
 
         x_eA = np.linspace(*self.aLim)
@@ -195,10 +194,10 @@ class MathAudioApplet(Widget):
         # cA eA cB eB
         if self.cursor.center_x < self.width * 0.5:
             self.cA = float(range_map(0, self.width * .5, *self.aLim, self.cursor.center_x))
-            self.cB = float(range_map(0, self.height, *self.bLim, self.cursor.center_y))
+            self.cB = float(range_map(0.2 * self.height, self.height, *self.bLim, self.cursor.center_y))
         else:
             self.eA = float(range_map(self.width * .5, self.width, *self.aLim, self.cursor.center_x))
-            self.eB = float(range_map(0, self.height, *self.bLim, self.cursor.center_y))
+            self.eB = float(range_map(0.2 * self.height, self.height, *self.bLim, self.cursor.center_y))
 
         self.str_cA = f'{self.cA:.3f}'
         self.str_cB = f'{self.cB:.3f}'
