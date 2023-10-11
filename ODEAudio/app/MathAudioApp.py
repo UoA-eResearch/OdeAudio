@@ -59,10 +59,16 @@ class MathAudioApplet(Widget):
         self.add_widget(self.keyboard)
         self.popup = None
 
-        self.aLim = (.4, 1.6)
-        self.bLim = (0.5, 2)
+        # x/y limits for the left (fixed) panel
+        self.LaLim = (.4, 1.6)
+        self.LbLim = (0.5, 2)
+        # x/y limits for the right (zoomed) panel
+        self.RaLim = (.4, 1.6)
+        self.RbLim = (0.5, 2)
 
-        bg_image = get_image(self.aLim, self.bLim)
+        self.select_end = (self.width * 0.5, self.height * 0.2)
+
+        bg_image = get_image(self.LaLim, self.LbLim)
         bg_image.save('bg_left.png')
 
         self.update_guides()
@@ -116,7 +122,7 @@ class MathAudioApplet(Widget):
             self.solver.set_channel(4, 1)
             self.rChan = 4
         elif channel < 6:
-            self.solver.set_channel(channel-1, 0)
+            self.solver.set_channel(channel - 1, 0)
             self.lChan = channel - 1
         else:
             self.solver.set_channel(channel - 6, 1)
@@ -147,9 +153,9 @@ class MathAudioApplet(Widget):
                 x, y = new_points
 
                 for i, x0, x1 in zip(
-                    range(5),
-                    np.arange(0, 1.0, .2) * self.width,
-                    np.arange(.2, 1.2, .2) * self.width
+                        range(5),
+                        np.arange(0, 1.0, .2) * self.width,
+                        np.arange(.2, 1.2, .2) * self.width
                 ):
                     self.set_points(i, zip(
                         range_map(0, 1, x0, x1, x),
@@ -158,39 +164,66 @@ class MathAudioApplet(Widget):
 
     def update_guides(self):
         # Guides for cA/cB
-        screen_transform = (self.aLim, (0, self.width/2), self.bLim, (0.2 * self.height, self.height))
+        screen_transform = (self.LaLim, (0, self.width / 2), self.LbLim, (0.2 * self.height, self.height))
 
         self.cCursor = [
-            range_map(*self.aLim, 0, self.width / 2, self.cA),
-            range_map(*self.bLim, 0.2 * self.height, self.height, self.cB)
+            range_map(*self.LaLim, 0, self.width / 2, self.cA),
+            range_map(*self.LbLim, 0.2 * self.height, self.height, self.cB)
         ]
 
-        x_cA = np.linspace(*self.aLim)
+        x_cA = np.linspace(*self.LaLim)
         self.cPoints1 = map_zip(x_cA, (self.eA + self.eB) - x_cA, *screen_transform)
         self.cPoints2 = map_zip(x_cA, (self.eA ** 2 * self.eB) / (x_cA ** 2), *screen_transform)
         self.cPoints3 = map_zip(x_cA, (x_cA * self.eA) / self.eB, *screen_transform)
 
         # Guides for eA/eB
-        screen_transform = (self.aLim, (self.width / 2, self.width), self.bLim, (0.2 * self.height, self.height))
+        screen_transform = (self.RaLim, (self.width / 2, self.width), self.RbLim, (0.2 * self.height, self.height))
 
         self.eCursor = [
-            range_map(*self.aLim, self.width / 2, self.width, self.eA),
-            range_map(*self.bLim, 0.2 * self.height, self.height, self.eB)
+            range_map(*self.RaLim, self.width / 2, self.width, self.cA),
+            range_map(*self.RbLim, 0.2 * self.height, self.height, self.cB)
         ]
 
-        x_eA = np.linspace(*self.aLim)
-        self.ePoints1 = map_zip(x_eA, (self.cA + self.cB) - x_eA, *screen_transform)
-        self.ePoints2 = map_zip(x_eA, (self.cA ** 2 * self.cB) / (x_eA ** 2), *screen_transform)
-        self.ePoints3 = map_zip(x_eA, (x_eA * self.cA) / self.cB, *screen_transform)
+        x_cA = np.linspace(*self.RaLim)
+        self.ePoints1 = map_zip(x_cA, (self.eA + self.eB) - x_cA, *screen_transform)
+        self.ePoints2 = map_zip(x_cA, (self.eA ** 2 * self.eB) / (x_cA ** 2), *screen_transform)
+        self.ePoints3 = map_zip(x_cA, (x_cA * self.eA) / self.eB, *screen_transform)
+
+    select_start = ListProperty([0, 0])
+    select_active = BooleanProperty(False)
+    select_end = ListProperty([0, 0])
+
+    def on_touch_down(self, touch):
+        # Start drag if in left pane
+        if touch.x < self.width * 0.5 and touch.y > self.height * 0.2:
+            self.select_active = True
+            self.select_start = touch.pos
+
+    def on_touch_move(self, touch):
+        if (
+                touch.x < self.width * 0.5
+                and touch.y > self.height * 0.2
+                and self.select_active):
+            self.select_end = touch.pos
 
     def on_touch_up(self, touch):
+        # End drag if in left pane
+        if touch.x < self.width * 0.5 and touch.y > self.height * 0.2:
+            self.select_active = False
+            self.select_end = touch.pos
+
+            # Update right side limits based on selection
+            self.RaLim = tuple(sorted(range_map(0, self.width * .5, *self.LaLim,
+                                                (self.select_start[0], self.select_end[0]))))
+            self.RbLim = tuple(sorted(range_map(0.2 * self.height, self.height, *self.LbLim,
+                                                (self.select_end[1], self.select_start[1]))))
+            print(self.RaLim)
+            print(self.RbLim)
+
         # cA eA cB eB
-        if self.cursor.center_x < self.width * 0.5:
-            self.cA = float(range_map(0, self.width * .5, *self.aLim, self.cursor.center_x))
-            self.cB = float(range_map(0.2 * self.height, self.height, *self.bLim, self.cursor.center_y))
-        else:
-            self.eA = float(range_map(self.width * .5, self.width, *self.aLim, self.cursor.center_x))
-            self.eB = float(range_map(0.2 * self.height, self.height, *self.bLim, self.cursor.center_y))
+        if touch.x >= self.width * 0.5 and touch.y > self.height * 0.2:
+            self.cA = float(range_map(self.width * .5, self.width, *self.RaLim, touch.x))
+            self.cB = float(range_map(0.2 * self.height, self.height, *self.RbLim, touch.y))
 
         self.str_cA = f'{self.cA:.3f}'
         self.str_cB = f'{self.cB:.3f}'
@@ -218,7 +251,7 @@ class MathAudioApp(App):
     def build(self):
         app = MathAudioApplet()
         Window.bind(size=app.on_resize)
-        Clock.schedule_interval(app.update, 1/30)
+        Clock.schedule_interval(app.update, 1 / 30)
         return app
 
 

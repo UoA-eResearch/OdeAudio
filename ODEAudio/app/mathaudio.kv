@@ -70,6 +70,14 @@
             points: self.ePoints3
             width: 1.414
 
+        # Selection rectangle
+        Color:
+            rgba: 1, 1, 1, 1
+
+        Line:
+            points: (self.select_start, (self.select_start[0], self.select_end[1]), self.select_end, (self.select_end[0], self.select_start[1]), self.select_start)
+            width: 1
+
         ## Channel frequencies
         # Clear area
         Color:
@@ -88,7 +96,7 @@
             size: root.width * 0.2, root.height * 0.2
 
         Color:
-            rgba: 0, 0.5, 0, 0.5
+            rgba: 0, 0.4, 0.2, 0.5
 
         Rectangle:
             pos: self.rChan * root.width * 0.2, 0
