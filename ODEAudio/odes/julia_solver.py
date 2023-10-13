@@ -18,11 +18,12 @@ class JSolver:
         self.channels = [0, 1]
 
         self.args = args
-        self.new_args = None
+        self.new_args = None        # Receive new parameters
+        self.flush_buffer = False   # On generating new data, overwrite the buffer rather than extending it
 
-        self.update_freq = False
+        self.update_freq = False    # Flag to update the frequency plot
 
-        self.step_size = 0.25
+        self.step_size = 0.75
 
         self.solver = de.ODEProblem(self.dy, self.y_init, (0, 250), self.args,
                                     abstol=1e-7, reltol=1e-7)
@@ -30,7 +31,7 @@ class JSolver:
         self.trace_file = Trace()
         self.trace_file.update_pars(*self.args)
 
-        self.buffer = 10000
+        self.buffer = 10013
 
         self.start_index = 0
         self.Y = self.y_init
@@ -56,7 +57,12 @@ class JSolver:
             self.args = self.new_args
             self.new_args = None
 
-            self.Y = self.yy
+            # Trim the buffer (not completely), then schedule new generation from there
+            self.flush_buffer = True
+            # Avoid buffer aligning with callback
+            end_index = min(self.Y.shape[0]-1, self.start_index + 1017)
+            self.yy = self.Y[end_index, :]
+            self.Y = self.Y[self.start_index:end_index, :]
             self.start_index = 0
 
             self.trace_file.update_pars(*self.args)
@@ -69,7 +75,7 @@ class JSolver:
             self.Y = self.yy
             self.start_index = 0
 
-        if len(self.Y) - buf < self.start_index:
+        if len(self.Y) - buf < self.start_index or self.flush_buffer:
             prob = de.remake(self.solver,
                              u0=self.yy,
                              tspan=(0, 2 * buf * self.step_size),
@@ -80,9 +86,18 @@ class JSolver:
 
             self.yy = sol.u[-1]
             y = np.asarray(sol(t_out))
-            self.Y = np.vstack((self.Y, y.T))
 
-            self.trace_file.write(t_out, y.T)
+            if self.flush_buffer:
+                self.Y = np.vstack((self.Y, y.T))
+                self.Y = self.Y[self.start_index:, :]
+                self.start_index = 0
+                self.flush_buffer = False
+            else:
+                self.Y = np.vstack((self.Y, y.T))
+                self.Y = self.Y[self.start_index:, :]
+                self.start_index = 0
+
+            # self.trace_file.write(t_out, y.T)
 
     def get_trace(self):
         pts = 2000
@@ -148,12 +163,30 @@ class JSolver:
             print(status, file=sys.stderr)
 
         while len(self.Y) < self.start_index + frames:
-            self.buffer = 10 * frames
+            self.buffer = 10 * frames + 13
             sleep(10)
 
         d = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
+        # Trace log data
+        # self.trace_file.write(np.arange(0, frames), d)
 
         outdata[:, :] = 2 * (np.exp(d) - 0.5)
+
+        # Partially successful pop filter - removes large jumps in the data by
+        # setting the diff to 0, then cumsumming to get a continuous signal
+        # Noteing that for audio, we don't really care about the offset from y=0, only the oscillations
+        diff = np.diff(outdata, axis=0)
+        for i in [0, 1]:
+            threshold = sorted(np.abs(diff[:, i]))[-5]
+            diff[np.abs(diff[:, i]) > threshold, i] = 0
+        outdata = np.cumsum(diff, axis=0)
+
+        # This could also work, though ideally only applied around discontinuities
+        # for i in [0, 1]:
+        #     outdata[3:-3, i] = np.convolve(outdata[3:-3, i], [.333,.333,.333], mode='same')
+
+        # Trace the actual data being played - this has a huge performance cost
+        self.trace_file.write(np.arange(0, frames), outdata)
 
         self.start_index += frames
         self.update_freq = True
