@@ -122,7 +122,7 @@ class JSolver:
             # self.trace_file.write(t_out, y.T)
 
     def get_trace(self):
-        pts = 2000
+        pts = 1000
         if self.Y.shape[0] < pts \
                 or self.Y.shape[0] < self.start_index \
                 or self.new_args is not None \

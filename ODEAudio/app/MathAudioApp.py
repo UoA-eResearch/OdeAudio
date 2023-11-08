@@ -5,7 +5,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 
 from image.background import get_image
-from utility.lerps import range_map, map_zip
+from utility.lerps import range_map, map_zip, clamp
 
 Config.set('graphics', 'width', 1200)
 Config.set('graphics', 'height', 600)
@@ -144,10 +144,8 @@ class MathAudioApplet(Widget):
         elif i == 4:
             self.points4 = val
 
-    def update(self, dt):
-        self.solver.thread_step()
-
-        if self.solver.update_freq:
+    def update_traces(self, force = False):
+        if self.solver.update_freq or force:
             new_points = self.solver.get_trace()
             if new_points is not None:
                 x, y = new_points
@@ -159,8 +157,12 @@ class MathAudioApplet(Widget):
                 ):
                     self.set_points(i, zip(
                         range_map(0, 1, x0, x1, x),
-                        range_map(0, 1, 0, self.height * .2, y[:, i])
+                        range_map(-2, 2, 0, self.height * .2, clamp(-2, 2, y[:, i]))
                     ))
+
+    def update(self, dt):
+        self.solver.thread_step()
+        self.update_traces()
 
     def update_guides(self):
         # Guides for cA/cB
@@ -237,6 +239,7 @@ class MathAudioApplet(Widget):
 
     def on_resize(self, *args):
         self.update_guides()
+        self.update_traces(force=True)
 
 
 class Cursor(Widget):

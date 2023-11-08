@@ -12,3 +12,9 @@ def map_zip(x, y, x_from, x_to, y_from, y_to):
         range_map(*x_from, *x_to, x),
         range_map(*y_from, *y_to, y)
     )
+
+
+@np.vectorize
+def clamp(l, h, v):
+    """Clamp a value v between l and h"""
+    return np.fmin(np.fmax(v, l), h)
