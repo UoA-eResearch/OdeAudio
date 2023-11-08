@@ -5,6 +5,7 @@ from diffeqpy import de
 from sounddevice import sleep
 
 from odes.equation import build_julia_dy
+from utility.pop_filter import backfill_nans, smooth_pops
 from utility.trace import Trace
 
 
@@ -96,6 +97,10 @@ class JSolver:
                 self.Y = np.vstack((self.Y, y.T))
                 self.Y = self.Y[self.start_index:, :]
                 self.start_index = 0
+            # Pop filtering (all disabled for now as probably not necessary)
+            # backfill_nans(out)
+            # smooth_pops(out)
+
 
             # self.trace_file.write(t_out, y.T)
 
@@ -172,21 +177,9 @@ class JSolver:
 
         outdata[:, :] = 2 * (np.exp(d) - 0.5)
 
-        # Partially successful pop filter - removes large jumps in the data by
-        # setting the diff to 0, then cumsumming to get a continuous signal
-        # Noteing that for audio, we don't really care about the offset from y=0, only the oscillations
-        diff = np.diff(outdata, axis=0)
-        for i in [0, 1]:
-            threshold = sorted(np.abs(diff[:, i]))[-5]
-            diff[np.abs(diff[:, i]) > threshold, i] = 0
-        outdata = np.cumsum(diff, axis=0)
-
-        # This could also work, though ideally only applied around discontinuities
-        # for i in [0, 1]:
-        #     outdata[3:-3, i] = np.convolve(outdata[3:-3, i], [.333,.333,.333], mode='same')
 
         # Trace the actual data being played - this has a huge performance cost
-        self.trace_file.write(np.arange(0, frames), outdata)
+        # self.trace_file.write(np.arange(0, frames), outdata)
 
         self.start_index += frames
         self.update_freq = True
