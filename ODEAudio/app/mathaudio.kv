@@ -17,10 +17,6 @@
             rgba: .6, .6, .6, .8
 
         Line:
-            points: ((0, root.height/2), (root.width, root.height/2))
-            width: 1
-
-        Line:
             points: ((root.width/2, 0), (root.width/2, root.height))
             width: 1
 
@@ -142,8 +138,6 @@
             points: ((root.width * .8, 0), (root.width * 0.8, root.height * .2))
 
 
-    cursor: mouse_cursor
-
     # cA/B Labels
     Label:
         font_size: 40
@@ -164,39 +158,9 @@
             PopMatrix
         text: "cB: " + str(root.str_cB)
 
-    # eA/B labels:
-    Label:
-        font_size: 40
-        center_x: root.width * 3 / 4
-        top: root.top - 5
-        text: "eA: " + str(root.str_eA)
-
-    Label:
-        font_size: 40
-        center_y: root.height * .5
-        x: 5 + root.width * .5
-        canvas.before:
-            PushMatrix
-            Rotate:
-                angle: 90
-                origin: self.center
-        canvas.after:
-            PopMatrix
-        text: "eB: " + str(root.str_eB)
-
     Label:
         font_size: 40
         center_x: root.width / 2
         bottom: 5
         text: root.pause_text
 
-    Cursor:
-        id: mouse_cursor
-        center: self.parent.center
-
-<Cursor>:
-    size: 10, 10
-    canvas:
-        Ellipse:
-            pos: self.pos
-            size: self.size
