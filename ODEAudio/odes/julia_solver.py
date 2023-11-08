@@ -9,6 +9,25 @@ from utility.pop_filter import backfill_nans, smooth_pops
 from utility.trace import Trace
 
 
+# Performance tuning parameters
+# - Buffer size:    bigger means we request larger integration chunks from julia,
+#                   more efficient, but more likely to hitch when we truncate the buffer
+#                   (prime numbers may help avoid integration aligning with output boundary)
+buffer_size = 3013
+# - Step size:      smaller means we get more data points for a given t range,
+#                   stretching out the signal and reducing pitch
+#                   this may be a cheap way to get more data for less integration,
+#                   but it's probably more effective to reduce the sample rate (play_stream.py)
+step_size = 0.5
+# - Init dt:        the initial dt used by the integrator - larger may mean better performance, or it may be
+#                   quickly overriden by the integrator and have no effect at all
+init_dt = step_size / 8
+# - Truncation buffer: how much data to keep when the parameter values change
+#                   larger means less hitching, but a longer delay until you hear the parameter change
+truncation_buffer = 1517
+#
+
+
 class JSolver:
     def __init__(self, y_init: np.array, args: np.array):
         self.dy = build_julia_dy()
@@ -24,7 +43,7 @@ class JSolver:
 
         self.update_freq = False    # Flag to update the frequency plot
 
-        self.step_size = 0.75
+        self.step_size = step_size
 
         self.solver = de.ODEProblem(self.dy, self.y_init, (0, 250), self.args,
                                     abstol=1e-7, reltol=1e-7)
@@ -32,7 +51,7 @@ class JSolver:
         self.trace_file = Trace()
         self.trace_file.update_pars(*self.args)
 
-        self.buffer = 10013
+        self.buffer = buffer_size
 
         self.start_index = 0
         self.Y = self.y_init
@@ -61,8 +80,8 @@ class JSolver:
             # Trim the buffer (not completely), then schedule new generation from there
             self.flush_buffer = True
             # Avoid buffer aligning with callback
-            end_index = min(self.Y.shape[0]-1, self.start_index + 1017)
-            self.yy = self.Y[end_index, :]
+            end_index = min(self.Y.shape[0]-1, self.start_index + truncation_buffer)
+            self.yy = np.log((self.Y[end_index, :]/2)+0.5)
             self.Y = self.Y[self.start_index:end_index, :]
             self.start_index = 0
 
@@ -80,7 +99,8 @@ class JSolver:
             prob = de.remake(self.solver,
                              u0=self.yy,
                              tspan=(0, 2 * buf * self.step_size),
-                             p=self.args
+                             p=self.args,
+                             dt=init_dt
                              )
             sol = de.solve(prob)
             t_out = np.arange(0, 2 * buf * self.step_size, self.step_size)
@@ -88,19 +108,16 @@ class JSolver:
             self.yy = sol.u[-1]
             y = np.asarray(sol(t_out))
 
-            if self.flush_buffer:
-                self.Y = np.vstack((self.Y, y.T))
-                self.Y = self.Y[self.start_index:, :]
-                self.start_index = 0
-                self.flush_buffer = False
-            else:
-                self.Y = np.vstack((self.Y, y.T))
-                self.Y = self.Y[self.start_index:, :]
-                self.start_index = 0
+            out = 2 * (np.exp(y.T) - 0.5)
+
             # Pop filtering (all disabled for now as probably not necessary)
             # backfill_nans(out)
             # smooth_pops(out)
 
+            self.Y = np.vstack((self.Y, out))
+            self.Y = self.Y[self.start_index:, :]
+            self.start_index = 0
+            self.flush_buffer = False
 
             # self.trace_file.write(t_out, y.T)
 
@@ -168,15 +185,11 @@ class JSolver:
             print(status, file=sys.stderr)
 
         while len(self.Y) < self.start_index + frames:
-            self.buffer = 10 * frames + 13
             sleep(10)
 
         d = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
-        # Trace log data
-        # self.trace_file.write(np.arange(0, frames), d)
 
-        outdata[:, :] = 2 * (np.exp(d) - 0.5)
-
+        outdata[:, :] = d # 2 * (np.exp(d) - 0.5)
 
         # Trace the actual data being played - this has a huge performance cost
         # self.trace_file.write(np.arange(0, frames), outdata)
