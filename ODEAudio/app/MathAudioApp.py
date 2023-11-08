@@ -56,6 +56,9 @@ class MathAudioApplet(Widget):
         self.keyboard.register(self.exit, keycode=27)   # esc
         self.keyboard.register(self.reset, text='n')    # reset variables
         self.keyboard.register(self.set_pars, text='m') # set parameters
+        # Nudge variables
+        for c in 'qwertasdfg':
+            self.keyboard.register(self.nudge, text=c)
 
         for i in range(10):
             self.keyboard.register(self.set_channel, text=str(i))
@@ -151,6 +154,28 @@ class MathAudioApplet(Widget):
         self.str_eB = f'{self.eB:.3f}'
 
         self.update_guides()
+
+    def nudge(self, text):
+        if text == 'q':
+            self.solver.nudge([5, 0, 0, 0, 0])
+        elif text == 'w':
+            self.solver.nudge([0, 5, 0, 0, 0])
+        elif text == 'e':
+            self.solver.nudge([0, 0, 5, 0, 0])
+        elif text == 'r':
+            self.solver.nudge([0, 0, 0, 5, 0])
+        elif text == 't':
+            self.solver.nudge([0, 0, 0, 0, 5])
+        elif text == 'a':
+            self.solver.nudge([-5, 0, 0, 0, 0])
+        elif text == 's':
+            self.solver.nudge([0, -5, 0, 0, 0])
+        elif text == 'd':
+            self.solver.nudge([0, 0, -5, 0, 0])
+        elif text == 'f':
+            self.solver.nudge([0, 0, 0, -5, 0])
+        elif text == 'g':
+            self.solver.nudge([0, 0, 0, 0, -5])
 
     def set_channel(self, str_channel):
         channel = int(str_channel)
@@ -274,8 +299,8 @@ class MathAudioApplet(Widget):
         self.solver.change_args(self.cA, self.eA, self.cB, self.eB)
 
     def on_resize(self, *args):
-        self.update_guides()
         self.update_traces(force=True)
+        self.update_guides()
 
 
 class Cursor(Widget):

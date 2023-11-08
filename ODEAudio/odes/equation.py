@@ -57,15 +57,14 @@ def dy5_vec(_, y, cA, eA, cB, eB):
     return dy
 
 
-# Possible modification to julia code to clamp invalid inputs
-# u[u. > 1]. = 1
-
 def build_julia_dy():
     return julia.Main.eval("""
         using LinearAlgebra
         
         function du(u, p, t)
-            u[u .> 1] .= 1
+            u[u .> 0] .= 0
+            u[u .== -Inf] .= -1000
+        
             u2exp = exp.(2*u)
             utot = sum(u2exp)
         

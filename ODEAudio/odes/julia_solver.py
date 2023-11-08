@@ -33,6 +33,7 @@ class JSolver:
         self.y_init = y_init
         self.yy = y_init
         self.new_init = None
+        self.nudge_vars = np.array([0, 0, 0, 0, 0])
 
         self.channels = [0, 1]
 
@@ -66,6 +67,9 @@ class JSolver:
         self.trace_file.close()
         self.trace_file = Trace()
 
+    def nudge(self, nudge):
+        self.nudge_vars += nudge
+
     def change_args(self, *args):
         self.new_args = np.asarray(args)
 
@@ -85,6 +89,24 @@ class JSolver:
             self.start_index = 0
 
             self.trace_file.update_pars(*self.args)
+
+        if np.any(self.nudge_vars):
+            self.flush_buffer = True
+            end_index = min(self.Y.shape[0]-1, self.start_index + truncation_buffer)
+
+            # Alternative: apply nudge to exp form
+            # new_y = self.Y[end_index, :] + self.nudge_vars
+            # new_y = np.fmin(np.fmax(new_y, -1.0), 1.0)
+            # self.yy = np.log((new_y / 2) + 0.5)
+
+            # Apply nudge
+            self.yy = np.log((self.Y[end_index, :]/2)+0.5) + self.nudge_vars
+            self.yy = np.fmin(self.yy, 0.0)
+            self.yy = np.fmax(self.yy, -1000.0)
+
+            self.nudge_vars = np.array([0, 0, 0, 0, 0])
+            self.Y = self.Y[self.start_index:end_index, :]
+            self.start_index = 0
 
         if self.new_init is not None:
             self.y_init = self.new_init
