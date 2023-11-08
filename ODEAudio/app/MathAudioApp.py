@@ -50,10 +50,13 @@ class MathAudioApplet(Widget):
                               np.asarray([self.cA, self.eA, self.cB, self.eB]))
         self.sound = AudioStream(self.solver.callback)
 
+        # Keyboard listener and triggers
         self.keyboard = MyKeyboardListener()
-        self.keyboard.register(self.pause, keycode=32)
-        self.keyboard.register(self.reset, text='r')
-        self.keyboard.register(self.exit, keycode=27)
+        self.keyboard.register(self.pause, keycode=32)  # space bar
+        self.keyboard.register(self.exit, keycode=27)   # esc
+        self.keyboard.register(self.reset, text='n')    # reset variables
+        self.keyboard.register(self.set_pars, text='m') # set parameters
+
         for i in range(10):
             self.keyboard.register(self.set_channel, text=str(i))
         self.add_widget(self.keyboard)
@@ -115,6 +118,39 @@ class MathAudioApplet(Widget):
         self.keyboard.focus()
 
         self.solver.reset(y_init)
+
+    def set_pars(self, *args):
+        self.sound.stream.stop()
+        self.pause_text = "Paused"
+
+        textInput = TextInput(text=', '.join([str(v) for v in self.solver.args]),
+                              multiline=False)
+        textInput.bind(on_text_validate=self.reset_pars)
+        self.popup = Popup(title='Set parameters (cA, eA, cB, eB)', content=textInput, auto_dismiss=False)
+        self.popup.open()
+
+    def reset_pars(self, value):
+        values = value.text.split(',')
+        args = [float(v) for v in values]
+
+        self.popup.dismiss()
+        self.popup = None
+        self.keyboard.focus()
+
+        self.solver.change_args(*args)
+
+        self.cA = args[0]
+        self.eA = args[1]
+        self.cB = args[2]
+        self.eB = args[3]
+
+        self.str_cA = f'{self.cA:.3f}'
+        self.str_cB = f'{self.cB:.3f}'
+
+        self.str_eA = f'{self.eA:.3f}'
+        self.str_eB = f'{self.eB:.3f}'
+
+        self.update_guides()
 
     def set_channel(self, str_channel):
         channel = int(str_channel)
@@ -255,6 +291,7 @@ class MathAudioApp(App):
         app = MathAudioApplet()
         Window.bind(size=app.on_resize)
         Clock.schedule_interval(app.update, 1 / 30)
+        app.update_guides()
         return app
 
 
