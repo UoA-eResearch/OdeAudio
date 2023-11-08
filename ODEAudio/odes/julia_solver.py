@@ -13,19 +13,18 @@ from utility.trace import Trace
 # - Buffer size:    bigger means we request larger integration chunks from julia,
 #                   more efficient, but more likely to hitch when we truncate the buffer
 #                   (prime numbers may help avoid integration aligning with output boundary)
-buffer_size = 3013
+buffer_size = 2013
 # - Step size:      smaller means we get more data points for a given t range,
 #                   stretching out the signal and reducing pitch
 #                   this may be a cheap way to get more data for less integration,
 #                   but it's probably more effective to reduce the sample rate (play_stream.py)
-step_size = 0.5
+step_size = 0.75
 # - Init dt:        the initial dt used by the integrator - larger may mean better performance, or it may be
 #                   quickly overriden by the integrator and have no effect at all
 init_dt = step_size / 8
 # - Truncation buffer: how much data to keep when the parameter values change
 #                   larger means less hitching, but a longer delay until you hear the parameter change
-truncation_buffer = 1517
-#
+truncation_buffer = 501
 
 
 class JSolver:
@@ -119,7 +118,7 @@ class JSolver:
             self.start_index = 0
             self.flush_buffer = False
 
-            # self.trace_file.write(t_out, y.T)
+            # self.trace_file.write(t_out, out)
 
     def get_trace(self):
         pts = 1000
@@ -189,7 +188,7 @@ class JSolver:
 
         d = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
 
-        outdata[:, :] = d # 2 * (np.exp(d) - 0.5)
+        outdata[:, :] = np.copy(self.Y[self.start_index:self.start_index + frames, self.channels])
 
         # Trace the actual data being played - this has a huge performance cost
         # self.trace_file.write(np.arange(0, frames), outdata)

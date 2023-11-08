@@ -65,6 +65,7 @@ def build_julia_dy():
         using LinearAlgebra
         
         function du(u, p, t)
+            u[u .> 1] .= 1
             u2exp = exp.(2*u)
             utot = sum(u2exp)
         

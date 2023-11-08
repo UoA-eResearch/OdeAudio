@@ -46,7 +46,7 @@ class MathAudioApplet(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.solver = JSolver(np.asarray([-4, -5, -5, -5, -5]),
+        self.solver = JSolver(np.asarray([-5, -5, -5, -5, -20]),
                               np.asarray([self.cA, self.eA, self.cB, self.eB]))
         self.sound = AudioStream(self.solver.callback)
 
