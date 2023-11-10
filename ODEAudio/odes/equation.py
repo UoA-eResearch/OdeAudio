@@ -1,7 +1,5 @@
-import julia
 import numpy as np
-
-julia.Julia()
+from diffeqpy import de
 
 
 def dy(_, y, lambda_c, lambda_e):
@@ -58,10 +56,7 @@ def dy5_vec(_, y, cA, eA, cB, eB):
 
 
 def build_julia_dy():
-    return julia.Main.eval("""
-        using LinearAlgebra
-        
-        function du(u, p, t)
+    return de.seval("""function du(u, p, t)
             u[u .> 0] .= 0
             u[u .== -Inf] .= -1000
         
@@ -76,5 +71,4 @@ def build_julia_dy():
                 1 - utot + dot(circshift(u2exp, -i), vecs)
                 for i in 1:5
                     ]
-        end
-        """)
+        end""")

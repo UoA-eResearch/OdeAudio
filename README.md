@@ -37,7 +37,7 @@ If you get any errors about Julia not being found - double check that it's on yo
 
 #### Run the app
 
-`python -m ODEAAudio.main`
+`python -m ODEAudio.main`
 
 ### Controls
 Spacebar: pause/play, the app starts paused
