@@ -25,15 +25,15 @@ https://julialang.org/downloads/
 
 Make sure the check 'add Julia to PATH' during installation, and restart your machine.
 
-Launch Julia and install a few modules we need - these would be installed automatically later, but the app will appear to hang for several minutes.
+Using this package's venv, install julia dependencies in a python interpretter:
+    
+```python
+import julia
+julia.install()
 
-```julia
-using Pkg
-Pkg.add("DifferentialEquations")
-Pkg.add("LinearAlgebra")
+import diffeqpy
+diffeqpy.install()
 ```
-
-If you get any errors about Julia not being found - double check that it's on your path, and restart your machine.
 
 #### Run the app
 
@@ -42,10 +42,16 @@ If you get any errors about Julia not being found - double check that it's on yo
 ### Controls
 Spacebar: pause/play, the app starts paused
 
-r: reset, pauses the app and resets y to y_init
+n: reset, pauses the app and resets y to y_init
+m: specify parameters exactly
 
-click: sets lambda_c/lambda_e according to where you clicked
+q/w/e/r/t: nudge u[0-5] up
+a/s/d/f/g: nudge u[0-5] down
 
-p: plot signal in background (note that this is very unstable, and will crash in under a minute)
+1/2/3/4/5: select which axis to listen to on the left audio channel
+6/7/8/9/0: select which axis to listen to on the right audio channel
+
+click & drag in the left window: select the region of parameter space shown in the right window
+click in the right window: sets lambda_c according to where you clicked
 
 escape: closes the app
