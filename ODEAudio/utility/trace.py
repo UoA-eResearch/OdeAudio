@@ -1,4 +1,4 @@
-from os import path
+from os import path, makedirs
 
 from root import ROOT_DIR
 
@@ -28,6 +28,7 @@ class Trace:
     def _new_trace_filename():
         i = 0
         folder = path.join(ROOT_DIR, 'traces')
+        makedirs(folder, exist_ok=True)
         while path.exists(path.join(folder, f'trace_{i:>03}.csv')):
             i += 1
 
