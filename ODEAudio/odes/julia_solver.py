@@ -129,7 +129,7 @@ class JSolver:
             self.yy = sol.u[-1]
             y = np.asarray(sol(t_out))
 
-            out = 2 * (np.exp(y.T) - 0.5)
+            out = 2 * (np.exp(y) - 0.5)
 
             # Pop filtering (all disabled for now as probably not necessary)
             # backfill_nans(out)
