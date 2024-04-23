@@ -11,7 +11,7 @@ def get_image(aLim, bLim):
     image_aLim = (0., 2.)
     image_bLim = (0., 4.5)
 
-    im_path = path.join(ROOT_DIR, 'ODEAudioBG.png')
+    im_path = path.join(ROOT_DIR, 'data', 'ODEAudioBG.png')
 
     with Image.open(im_path) as im:
         w, h = im.size

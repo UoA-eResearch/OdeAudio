@@ -1,6 +1,6 @@
 from os import path, makedirs
 
-from root import ROOT_DIR
+from ODEAudio.root import ROOT_DIR
 
 
 class Trace:
