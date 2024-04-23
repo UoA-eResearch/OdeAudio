@@ -1,3 +1,34 @@
+[project]
+name = "ODEAudio"
+authors = [
+    {name = "Cornelis Drost", email="nelis.drost@auckland.ac.nz"},
+]
+version = "0.0.1"
+description = "Listening to Equations App"
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = [
+    "kivy[full]",
+    "numpy",
+    "scipy",
+    "sounddevice",
+    "diffeqpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "tqdm",
+    "seaborn",
+    "pytest",
+    "tox"
+    ]
+
+[project.scripts]
+ODEAudio = "ODEAudio.main:run"
+
+[tool.flit.module]
+name = "ODEAudio"
+
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"

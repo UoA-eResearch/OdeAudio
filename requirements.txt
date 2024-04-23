@@ -1,4 +1,3 @@
---extra-index-url https://kivy.org/downloads/simple/
 kivy[full]
 numpy
 scipy
