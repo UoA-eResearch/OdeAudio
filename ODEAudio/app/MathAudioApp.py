@@ -4,8 +4,8 @@ from kivy import Config
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 
-from image.background import get_image
-from utility.lerps import range_map, map_zip, clamp
+from ODEAudio.image.background import get_image
+from ODEAudio.utility.lerps import range_map, map_zip, clamp
 
 Config.set('graphics', 'width', 1200)
 Config.set('graphics', 'height', 600)
@@ -20,7 +20,7 @@ import numpy as np
 
 from ODEAudio.audio.play_stream import AudioStream
 from ODEAudio.app.keyboard import MyKeyboardListener
-from odes.julia_solver import JSolver
+from ODEAudio.odes.julia_solver import JSolver
 
 
 class MathAudioApplet(Widget):

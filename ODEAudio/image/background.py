@@ -3,7 +3,7 @@ from os import path
 from PIL import Image
 
 from root import ROOT_DIR
-from utility.lerps import range_map
+from ODEAudio.utility.lerps import range_map
 
 
 def get_image(aLim, bLim):

@@ -4,9 +4,8 @@ import numpy as np
 from diffeqpy import de
 from sounddevice import sleep
 
-from odes.equation import build_julia_dy
-from utility.pop_filter import backfill_nans, smooth_pops
-from utility.trace import Trace
+from ODEAudio.odes.equation import build_julia_dy
+from ODEAudio.utility.trace import Trace
 
 
 # Performance tuning parameters
@@ -208,7 +207,7 @@ class JSolver:
         while len(self.Y) < self.start_index + frames:
             sleep(10)
 
-        d = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
+        # d = np.asarray(self.Y[self.start_index:self.start_index + frames, self.channels])
 
         outdata[:, :] = np.copy(self.Y[self.start_index:self.start_index + frames, self.channels])
 
