@@ -14,26 +14,15 @@ e.g.: `.\.venv\Scripts\Activate.ps1` on Windows Powershell
 Install requirements
 
 ```
-pip install kivy[full] --pre --extra-index-url https://kivy.org/downloads/simple/
 pip install -r requirements.txt
 ```
 
 #### Julia setup
-We use Julia for integration, first install it from the website
+We use Julia for integration, it should be installed automatically the first time you run the app - which will take some time.
 
-https://julialang.org/downloads/
-
-Make sure the check 'add Julia to PATH' during installation, and restart your machine.
-
-Using this package's venv, install julia dependencies in a python interpretter:
-    
-```python
-import julia
-julia.install()
-
-import diffeqpy
-diffeqpy.install()
-```
+#### Performance tweaking
+The performance of the app can be tweaked by changing a number of settings in the code files:
+`ODEAudio/audio/play_stream.py` and `ODEAudio/odes/julia_solver.py`
 
 #### Run the app
 
