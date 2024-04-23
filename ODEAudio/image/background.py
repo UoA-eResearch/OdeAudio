@@ -2,7 +2,7 @@ from os import path
 
 from PIL import Image
 
-from root import ROOT_DIR
+from ODEAudio.root import ROOT_DIR
 from ODEAudio.utility.lerps import range_map
 
 
